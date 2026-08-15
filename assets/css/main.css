@@ -325,6 +325,21 @@ main a:not(.btn):not(.card):hover { background: var(--accent); color: var(--acce
 }
 
 .fish-egg { cursor: pointer; }
+.stik-egg { cursor: pointer; }
+.pix-stik.riding { pointer-events: auto; cursor: pointer; }
+.stik-bubble {
+  position: fixed;
+  z-index: 99;
+  max-width: 230px;
+  background: var(--surface);
+  border: var(--border-w) solid var(--ink);
+  box-shadow: 4px 4px 0 var(--shadow);
+  padding: 6px 10px;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--ink);
+  pointer-events: none;
+}
 
 /* webrings on the wall */
 .webring { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }

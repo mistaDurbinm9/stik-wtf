@@ -63,6 +63,33 @@ document.addEventListener('click', function (e) {
   if (e.target.closest('.fish-egg')) summonSchool();
 });
 
+// ---- stik speaks ----
+var STIK_LINES = [
+  'i host this myself, you know.',
+  'zero open ports. count them.',
+  'the shadows are load-bearing.',
+  'sign the guestbook or the fish gets it.',
+  'every pixel of me is hand-placed.',
+  '384GB of RAM and i still ride a onewheel.',
+  'type wtf. trust me.',
+  'the node hums. i listen.'
+];
+var stikLine = Math.floor(Math.random() * STIK_LINES.length);
+document.addEventListener('click', function (e) {
+  var s = e.target.closest('.stik-egg, .pix-stik.riding');
+  if (!s) return;
+  var old = document.querySelector('.stik-bubble');
+  if (old) old.remove();
+  var r = s.getBoundingClientRect();
+  var b = document.createElement('div');
+  b.className = 'stik-bubble';
+  b.textContent = STIK_LINES[stikLine++ % STIK_LINES.length];
+  document.body.appendChild(b);
+  b.style.left = Math.max(8, Math.min(r.left, window.innerWidth - b.offsetWidth - 8)) + 'px';
+  b.style.top = Math.max(8, r.top - b.offsetHeight - 10) + 'px';
+  setTimeout(function () { b.remove(); }, 2600);
+});
+
 // ---- live minecraft status ----
 var mc = document.querySelector('[data-mc]');
 if (mc) {

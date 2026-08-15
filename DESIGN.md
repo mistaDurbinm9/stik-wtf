@@ -113,6 +113,9 @@ The web-revival layer, animated. Rules that keep sprites on-theme instead of tac
     typing `w t f` (or tapping any fish sprite on the site — the touch path; every egg
     needs one, but it must never hijack navigation) still summons a school of eight
     (a school of stick figures is nonsense)
+  - stik speaks: tapping any stik sprite (wall adoptable, blocky variant, even the rider
+    mid-roll) pops a mono speech bubble with rotating one-liners — a box like every other
+    box, gone in ~2.5s. The mascot has a voice; the fish has a school; they don't swap.
 - **Page sprites:** each page may carry ONE small themed sprite, floated at the title,
   chosen via `sprite:` in frontmatter (content-editable, no layout edits). stik.wtf's set:
   blocky-stik mining (minecraft — the mascot goes cube-headed; themed variants beat
