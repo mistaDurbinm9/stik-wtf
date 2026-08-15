@@ -1,10 +1,15 @@
 # stik.wtf — the author's personal site
 
-**Status: BUILDING (since 2026-08-14).** The plan exists: `SITE_PLAN.md` (audience, content
-model, workflow, stack, build order) is the source of truth for WHAT gets built; `DESIGN.md`
-is the design system — portable, and referenced by the author's other projects. Stack: Hugo
-(extended) + hand-written CSS; content is markdown under `content/`, layouts under `layouts/`.
-Update content by adding files, not by editing layouts.
+**Status: LIVE at https://stik.wtf (deployed 2026-08-15).** `SITE_PLAN.md` is the source of
+truth for WHAT gets built; `DESIGN.md` is the design system — portable, and referenced by
+the author's other projects. Stack: Hugo (extended) + hand-written CSS; content is markdown
+under `content/`, layouts under `layouts/`. Update content by adding files, not by editing
+layouts — every push to master auto-deploys via webhook in ~15s.
+
+**Deployment (see `deploy/DEPLOY.md`):** LXC 902 (`stik-wtf`) on the Proxmox node — Caddy
+serving `public/`, `deploy/serve.py` under systemd (webhook rebuild + hit counter + uptime),
+cloudflared tunnel `stik-site` → apex + www, orange-cloud. Changing the served site =
+pushing to GitHub; touching the container needs the author (or node SSH access).
 
 ## Purpose, in the author's own framing (2026-08-14)
 
