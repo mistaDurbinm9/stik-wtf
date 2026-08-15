@@ -95,6 +95,7 @@ main a:not(.btn):not(.card):hover { background: var(--accent); color: var(--acce
 /* hero */
 .hero { padding: 3rem 0 1rem; }
 .hero h1 { font-size: clamp(2.6rem, 8vw, 4rem); margin: 0; }
+.hero h1::after { content: "▮"; color: var(--accent); margin-left: 0.15em; animation: pixflip 1s steps(1) infinite; }
 .hero p { font-size: 1.15rem; max-width: 46ch; }
 
 /* the box: border + hard shadow. the whole aesthetic is this. */
@@ -199,8 +200,25 @@ main a:not(.btn):not(.card):hover { background: var(--accent); color: var(--acce
   to { transform: translateX(calc(100vw + 80px)); }
 }
 
+/* page sprites: one small themed pixel per page, anchored at the title */
+.page-sprite { float: right; margin: 4px 0 10px 16px; }
+.page-sprite .fr2 { opacity: 0; }
+.page-sprite .fr1 { animation: pixflip 0.9s steps(1) infinite; }
+.page-sprite .fr2 { animation: pixflip 0.9s steps(1) infinite reverse; }
+
+/* minecraft page: floating islands in the margins, only when margins exist */
+.island { position: fixed; z-index: 0; pointer-events: none; }
+.island-l { left: calc(50vw - 390px - 120px); top: 26vh; animation: bob 2.8s steps(1) infinite; }
+.island-r { right: calc(50vw - 390px - 110px); top: 58vh; animation: bob 3.6s steps(1) infinite; }
+@keyframes bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+@media (max-width: 1120px) { .island { display: none; } }
+
 @media (prefers-reduced-motion: reduce) {
   .pix, .pix-fish.swimming, .pix-stik.riding, .btn:hover::after { animation: none; display: none; }
+  .page-sprite .fr1, .page-sprite .fr2, .island, .hero h1::after { animation: none; }
 }
 
 /* badges */

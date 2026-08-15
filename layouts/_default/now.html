@@ -1,5 +1,6 @@
 {{ define "main" }}
 <article class="page">
+  {{ partial "page-sprite.html" . }}
   <h1>{{ .Title }}</h1>
   {{ .Content }}
   {{ partial "updates-list.html" (dict "updates" (first 20 (where site.RegularPages "Type" "updates")) "showProject" true) }}

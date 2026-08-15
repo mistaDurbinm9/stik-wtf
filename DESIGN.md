@@ -113,8 +113,15 @@ The web-revival layer, animated. Rules that keep sprites on-theme instead of tac
     typing `w t f` (or tapping any fish sprite on the site — the touch path; every egg
     needs one, but it must never hijack navigation) still summons a school of eight
     (a school of stick figures is nonsense)
-- **Ration the ambience:** at most one ambient sprite event per page load. Easter eggs stay
-  eggs by being rare.
+- **Page sprites:** each page may carry ONE small themed sprite, floated at the title,
+  chosen via `sprite:` in frontmatter (content-editable, no layout edits). stik.wtf's set:
+  blocky-stik mining (minecraft — the mascot goes cube-headed; themed variants beat
+  borrowed characters), llama (AI — it IS llama serving), server rack with blinking LED
+  (homelab), fish tank with bubbles (neoaquatics), ticking clock (now), envelope with
+  notification pixel (contact). Margin decorations (the Minecraft floating islands) are
+  allowed only where real empty margin exists — hidden below ~1120px viewport width.
+- **Ration the ambience:** at most one ambient sprite event per page load, one page sprite
+  per page. Easter eggs stay eggs by being rare.
 - **`prefers-reduced-motion: reduce` disables every sprite.** Non-negotiable.
 - Porting: each project picks its own creature (neoaquatics has obvious candidates); the
   spark/burst mechanics port as-is.

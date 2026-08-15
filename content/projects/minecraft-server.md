@@ -1,4 +1,5 @@
 ---
+sprite: blocky-stik
 title: Minecraft Server
 status: live
 weight: 20

@@ -1,4 +1,5 @@
 ---
+sprite: server
 title: The Homelab
 status: live
 weight: 30

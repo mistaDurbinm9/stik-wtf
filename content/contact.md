@@ -1,4 +1,5 @@
 ---
+sprite: mail
 title: Contact
 ---
 - GitHub: [mistaDurbinm9](https://github.com/mistaDurbinm9)

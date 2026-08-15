@@ -1,4 +1,5 @@
 ---
+sprite: clock
 title: Now
 layout: now
 ---

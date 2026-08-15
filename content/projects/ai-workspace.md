@@ -1,4 +1,5 @@
 ---
+sprite: llama
 title: AI Workspace
 status: building
 weight: 10

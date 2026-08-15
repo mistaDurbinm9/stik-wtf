@@ -1,4 +1,5 @@
 ---
+sprite: tank
 title: Neoaquatics
 status: live
 weight: 40
