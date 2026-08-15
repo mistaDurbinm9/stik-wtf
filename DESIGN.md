@@ -94,6 +94,9 @@ The web-revival layer, animated. Rules that keep sprites on-theme instead of tac
   breaks the entire mechanical illusion — it must tick like a game running at 2–10fps.
 - **Authoring:** inline SVG grids of 1×1 `<rect>`s with `shape-rendering="crispEdges"`,
   scaled up 3×. Two frames is enough for life (tail flip, blink).
+- **Halo:** every free-roaming sprite carries a 1px bg-colored silhouette behind it (game
+  sprites do this for a reason) so it stays legible over borders, text, and either theme.
+  Baked-color adoptables use the paper tone for the halo so they read on foreign sites too.
 - **Palette:** accent + ink + bg only. Sprites obey the one-accent rule like everything else.
 - **The mascot is stik** — a pixel stick figure (the handle, literally). Chosen over the
   fish because a mascot should be identity-level, not hobby-level: variants carry the
