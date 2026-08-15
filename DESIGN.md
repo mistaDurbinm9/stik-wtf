@@ -83,7 +83,29 @@ Motion is mechanical, not animated — no transitions needed, state changes just
 - Hover on a box: `translate(2px, 2px)` and shrink the shadow to 4px — the box moves
   *toward* its shadow.
 - Active/press: translate the full 6px, shadow to 0 — the box lands flat. That's the click.
-- Nothing else moves. No fades, no slides, no parallax, no scroll effects.
+- Nothing else moves — no fades, slides, parallax, or scroll effects — with ONE exception:
+  pixel sprites (next section), which animate in discrete frames.
+
+## Pixel sprites
+
+The web-revival layer, animated. Rules that keep sprites on-theme instead of tacky:
+
+- **`steps()` only, ever.** Frame flips and stepped movement. A sprite that tweens smoothly
+  breaks the entire mechanical illusion — it must tick like a game running at 2–10fps.
+- **Authoring:** inline SVG grids of 1×1 `<rect>`s with `shape-rendering="crispEdges"`,
+  scaled up 3×. Two frames is enough for life (tail flip, blink).
+- **Palette:** accent + ink + bg only. Sprites obey the one-accent rule like everything else.
+- **Vocabulary on stik.wtf** (reference impl: `layouts/partials/pix-fish.html`,
+  sprite blocks in `assets/css/main.css`, `assets/js/site.js`):
+  - hover spark: 2-frame pixel blink at a button's corner
+  - click burst: 6 pixels scatter in `steps(5)` and vanish
+  - the fish: 2-frame swimmer; crosses the viewport on ~1-in-5 page loads,
+    and typing `w t f` summons a school of eight
+- **Ration the ambience:** at most one ambient sprite event per page load. Easter eggs stay
+  eggs by being rare.
+- **`prefers-reduced-motion: reduce` disables every sprite.** Non-negotiable.
+- Porting: each project picks its own creature (neoaquatics has obvious candidates); the
+  spark/burst mechanics port as-is.
 
 ## Layout
 

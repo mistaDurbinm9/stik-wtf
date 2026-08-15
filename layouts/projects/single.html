@@ -10,6 +10,7 @@
     {{ range . }}<a class="btn" href="{{ .url }}">{{ .label }} →</a> {{ end }}
   </p>
   {{ end }}
+  {{ with .Params.mc_address }}{{ partial "mc-status.html" . }}{{ end }}
   {{ .Content }}
 
   {{ $updates := where (where site.RegularPages "Type" "updates") "Params.project" $slug }}

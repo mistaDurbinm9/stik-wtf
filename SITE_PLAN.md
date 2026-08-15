@@ -116,14 +116,20 @@ output + files-in-git is the boring, durable choice and makes the "tell Claude" 
 
 **v1.x — same-week follow-ups:**
 
-5. Sveltia admin + OAuth worker (the site launches without it; git and Claude paths work
+5. ~~Interactivity layer~~ **shipped 2026-08-14**: pixel-sprite system (hover spark, click
+   burst, ambient fish, `wtf` summons a school — rules in DESIGN.md), live Minecraft status
+   widget with copy-IP (client-side via api.mcsrvstat.us for now — optionally swap to a
+   self-hosted ping endpoint on the node at deploy), 404 page, pixel favicon.
+6. Sveltia admin + OAuth worker (the site launches without it; git and Claude paths work
    from day one).
-6. Media polish: image pipeline, first screenshots/clips on project pages.
+7. Media polish: image pipeline, first screenshots/clips on project pages.
 
 **Later, when earned:**
 
-7. Retro easter eggs: badge wall, guestbook-style page.
-8. Writing section — only if update entries start wanting to be essays.
+8. Retro easter eggs: badge wall, guestbook-style page, a REAL hit counter (needs a tiny
+   endpoint on the node — pairs naturally with the deploy-time webhook listener), maybe a
+   footer uptime line fed by the node.
+9. Writing section — only if update entries start wanting to be essays.
 
 ## Standing rules (from CLAUDE.md, restated so this doc is self-contained)
 

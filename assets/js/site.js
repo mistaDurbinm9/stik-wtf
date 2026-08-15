@@ -1,0 +1,98 @@
+// stik.wtf interactivity. Rules: sprites move in steps(), nothing tweens.
+
+// ---- pixel burst on button click ----
+document.addEventListener('pointerdown', function (e) {
+  var btn = e.target.closest('.btn, .mc-copy');
+  if (!btn) return;
+  for (var i = 0; i < 6; i++) {
+    var p = document.createElement('span');
+    p.className = 'pix';
+    var a = (Math.PI * 2 * i) / 6 + Math.random();
+    p.style.left = e.clientX + 'px';
+    p.style.top = e.clientY + 'px';
+    p.style.setProperty('--dx', Math.round(Math.cos(a) * (14 + Math.random() * 14)) + 'px');
+    p.style.setProperty('--dy', Math.round(Math.sin(a) * (14 + Math.random() * 14)) + 'px');
+    if (i % 2) p.style.background = 'var(--ink)';
+    document.body.appendChild(p);
+    p.addEventListener('animationend', function () { this.remove(); });
+  }
+});
+
+// ---- the fish ----
+function spawnFish(delay) {
+  var tpl = document.getElementById('pix-fish');
+  if (!tpl) return;
+  setTimeout(function () {
+    var f = tpl.content.firstElementChild.cloneNode(true);
+    f.classList.add('swimming');
+    f.style.top = Math.round(10 + Math.random() * 70) + 'vh';
+    f.style.animationDuration = (7 + Math.random() * 6) + 's';
+    document.body.appendChild(f);
+    f.addEventListener('animationend', function () { f.remove(); });
+  }, delay);
+}
+
+// occasional ambient swim-by: 1 in 5 page loads
+if (Math.random() < 0.2) spawnFish(5000 + Math.random() * 10000);
+
+// typing "wtf" summons the school
+var seq = '';
+document.addEventListener('keydown', function (e) {
+  if (e.target instanceof Element && e.target.closest('input, textarea, select')) return;
+  seq = (seq + e.key).slice(-3);
+  if (seq === 'wtf') {
+    for (var i = 0; i < 8; i++) spawnFish(i * 350 + Math.random() * 200);
+    seq = '';
+  }
+});
+
+// ---- live minecraft status ----
+var mc = document.querySelector('[data-mc]');
+if (mc) {
+  var host = mc.getAttribute('data-mc');
+  var badge = mc.querySelector('.mc-badge');
+  var line = mc.querySelector('.mc-line');
+
+  var render = function (j) {
+    if (j && j.online) {
+      badge.textContent = 'ONLINE';
+      badge.className = 'badge mc-badge badge-live';
+      var p = j.players || {};
+      var txt = (p.online || 0) + '/' + (p.max || '?') + ' players';
+      if (j.version) txt += ' · ' + j.version;
+      var names = (p.list || []).map(function (x) { return x.name; }).filter(Boolean);
+      if (names.length) txt += ' — ' + names.slice(0, 10).join(', ');
+      line.textContent = txt;
+    } else {
+      badge.textContent = 'OFFLINE';
+      badge.className = 'badge mc-badge badge-offline';
+      line.textContent = 'nobody home right now.';
+    }
+  };
+
+  var cached = null;
+  try { cached = JSON.parse(sessionStorage.getItem('mc-status') || 'null'); } catch (e) {}
+  if (cached && Date.now() - cached.t < 60000) {
+    render(cached.j);
+  } else {
+    fetch('https://api.mcsrvstat.us/3/' + host)
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        try { sessionStorage.setItem('mc-status', JSON.stringify({ t: Date.now(), j: j })); } catch (e) {}
+        render(j);
+      })
+      .catch(function () {
+        badge.textContent = 'UNKNOWN';
+        badge.className = 'badge mc-badge';
+        line.textContent = "status check didn't answer — the server may still be up; try joining.";
+      });
+  }
+
+  var copy = mc.querySelector('.mc-copy');
+  if (copy) copy.addEventListener('click', function () {
+    navigator.clipboard.writeText(host).then(function () {
+      copy.textContent = 'COPIED ✓';
+      setTimeout(function () { copy.textContent = 'COPY IP'; }, 1200);
+    });
+  });
+}

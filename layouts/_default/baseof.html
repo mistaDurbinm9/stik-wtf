@@ -6,6 +6,7 @@
 <title>{{ if .IsHome }}{{ site.Title }}{{ else }}{{ .Title }} · {{ site.Title }}{{ end }}</title>
 <meta name="description" content="{{ .Description | default site.Params.description }}">
 {{ with resources.Get "css/main.css" | minify | fingerprint }}<link rel="stylesheet" href="{{ .RelPermalink }}">{{ end }}
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
 </head>
 <body>
 <header class="site-head">
@@ -23,5 +24,7 @@
 <footer class="site-foot">
   <p>© stik — self-hosted on my own metal.</p>
 </footer>
+{{ partial "pix-fish.html" . }}
+{{ with resources.Get "js/site.js" | minify | fingerprint }}<script src="{{ .RelPermalink }}" defer></script>{{ end }}
 </body>
 </html>
