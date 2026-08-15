@@ -236,8 +236,16 @@ document.addEventListener('click', function (e) {
     fetch('/api/uptime')
       .then(function (r) { if (!r.ok) throw 0; return r.json(); })
       .then(function (j) {
-        up.textContent = ' · node up ' + j.days + 'd';
+        var s = j.seconds != null ? j.seconds : j.days * 86400;
+        var pad = function (n) { return String(n).padStart(2, '0'); };
+        var render = function () {
+          var rest = s % 86400;
+          up.textContent = ' · node up ' + Math.floor(s / 86400) + 'd ' +
+            pad(Math.floor(rest / 3600)) + ':' + pad(Math.floor((rest % 3600) / 60)) + ':' + pad(rest % 60);
+        };
+        render();
         up.hidden = false;
+        setInterval(function () { s++; render(); }, 1000); // ticks locally; one fetch total
       })
       .catch(function () {});
   }

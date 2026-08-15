@@ -70,9 +70,9 @@ def gb_add(name, msg, path=None):
     return entry
 
 
-def uptime_days():
+def uptime_seconds():
     with open("/proc/uptime") as f:
-        return int(float(f.read().split()[0]) // 86400)
+        return int(float(f.read().split()[0]))
 
 
 def rebuild():
@@ -98,7 +98,8 @@ class Handler(BaseHTTPRequestHandler):
         if self.path.startswith("/api/count"):
             self._json(200, {"n": bump_counter(peek="peek=1" in self.path)})
         elif self.path == "/api/uptime":
-            self._json(200, {"days": uptime_days()})
+            s = uptime_seconds()
+            self._json(200, {"seconds": s, "days": s // 86400})
         elif self.path == "/api/guestbook":
             self._json(200, {"entries": gb_list()})
         else:
