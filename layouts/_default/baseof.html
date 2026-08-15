@@ -26,6 +26,7 @@
   <p class="foot-meta"><span id="hits" hidden></span><span id="uptime" hidden></span></p>
 </footer>
 {{ partial "pix-fish.html" . }}
+{{ partial "pix-stik.html" . }}
 {{ with resources.Get "js/site.js" | minify | fingerprint }}<script src="{{ .RelPermalink }}" defer></script>{{ end }}
 </body>
 </html>

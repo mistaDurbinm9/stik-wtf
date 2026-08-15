@@ -117,7 +117,8 @@ output + files-in-git is the boring, durable choice and makes the "tell Claude" 
 **v1.x — same-week follow-ups:**
 
 5. ~~Interactivity layer~~ **shipped 2026-08-14**: pixel-sprite system (hover spark, click
-   burst, ambient fish, `wtf` summons a school — rules in DESIGN.md), live Minecraft status
+   burst, ambient ride-by from stik the mascot — a stick figure on a onewheel — and `wtf`
+   summons the fish school; rules in DESIGN.md), live Minecraft status
    widget with copy-IP (client-side via api.mcsrvstat.us for now — optionally swap to a
    self-hosted ping endpoint on the node at deploy), 404 page, pixel favicon.
 6. Sveltia admin + OAuth worker (the site launches without it; git and Claude paths work

@@ -95,12 +95,19 @@ The web-revival layer, animated. Rules that keep sprites on-theme instead of tac
 - **Authoring:** inline SVG grids of 1×1 `<rect>`s with `shape-rendering="crispEdges"`,
   scaled up 3×. Two frames is enough for life (tail flip, blink).
 - **Palette:** accent + ink + bg only. Sprites obey the one-accent rule like everything else.
-- **Vocabulary on stik.wtf** (reference impl: `layouts/partials/pix-fish.html`,
-  sprite blocks in `assets/css/main.css`, `assets/js/site.js`):
+- **The mascot is stik** — a pixel stick figure (the handle, literally). Chosen over the
+  fish because a mascot should be identity-level, not hobby-level: variants carry the
+  facets (the onewheel ride today; hard-hat and fish-holding variants are fair game later).
+  Rider in ink, wheel in accent.
+- **Vocabulary on stik.wtf** (reference impl: `layouts/partials/pix-stik.html`,
+  `layouts/partials/pix-fish.html`, sprite blocks in `assets/css/main.css`,
+  `assets/js/site.js`):
   - hover spark: 2-frame pixel blink at a button's corner
   - click burst: 6 pixels scatter in `steps(5)` and vanish
-  - the fish: 2-frame swimmer; crosses the viewport on ~1-in-5 page loads,
-    and typing `w t f` summons a school of eight
+  - stik's ride: 2-frame bob on the onewheel, rolling along the bottom edge on
+    ~1-in-5 page loads — the ambient slot belongs to the mascot
+  - the fish: demoted with honor — the wall's adoptable, the 404 critter, and typing
+    `w t f` still summons a school of eight (a school of stick figures is nonsense)
 - **Ration the ambience:** at most one ambient sprite event per page load. Easter eggs stay
   eggs by being rare.
 - **`prefers-reduced-motion: reduce` disables every sprite.** Non-negotiable.

@@ -32,8 +32,21 @@ function spawnFish(delay) {
   }, delay);
 }
 
-// occasional ambient swim-by: 1 in 5 page loads
-if (Math.random() < 0.2) spawnFish(5000 + Math.random() * 10000);
+// ---- the mascot: stik rides the onewheel along the bottom edge ----
+function spawnStik(delay) {
+  var tpl = document.getElementById('pix-stik');
+  if (!tpl) return;
+  setTimeout(function () {
+    var s = tpl.content.firstElementChild.cloneNode(true);
+    s.classList.add('riding');
+    s.style.animationDuration = (6 + Math.random() * 5) + 's';
+    document.body.appendChild(s);
+    s.addEventListener('animationend', function () { s.remove(); });
+  }, delay);
+}
+
+// occasional ambient ride-by: 1 in 5 page loads
+if (Math.random() < 0.2) spawnStik(5000 + Math.random() * 10000);
 
 // typing "wtf" summons the school
 var seq = '';

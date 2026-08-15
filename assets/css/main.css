@@ -172,9 +172,9 @@ main a:not(.btn):not(.card):hover { background: var(--accent); color: var(--acce
   animation: swim 9s steps(90, end) forwards;
 }
 .pix-fish .fr2 { opacity: 0; }
-.pix-fish.swimming .fr1 { animation: fishframe 0.5s steps(1) infinite; }
-.pix-fish.swimming .fr2 { animation: fishframe 0.5s steps(1) infinite reverse; }
-@keyframes fishframe {
+.pix-fish.swimming .fr1 { animation: pixflip 0.5s steps(1) infinite; }
+.pix-fish.swimming .fr2 { animation: pixflip 0.5s steps(1) infinite reverse; }
+@keyframes pixflip {
   0%, 100% { opacity: 1; }
   50% { opacity: 0; }
 }
@@ -182,8 +182,24 @@ main a:not(.btn):not(.card):hover { background: var(--accent); color: var(--acce
   to { transform: translateX(calc(100vw + 96px)); }
 }
 
+/* the mascot: stik rides the onewheel along the bottom edge */
+.pix-stik.riding {
+  position: fixed;
+  z-index: 98;
+  bottom: 6px;
+  left: -40px;
+  pointer-events: none;
+  animation: ride 8s steps(80, end) forwards;
+}
+.pix-stik .fr2 { opacity: 0; }
+.pix-stik.riding .fr1 { animation: pixflip 0.4s steps(1) infinite; }
+.pix-stik.riding .fr2 { animation: pixflip 0.4s steps(1) infinite reverse; }
+@keyframes ride {
+  to { transform: translateX(calc(100vw + 80px)); }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .pix, .pix-fish.swimming, .btn:hover::after { animation: none; display: none; }
+  .pix, .pix-fish.swimming, .pix-stik.riding, .btn:hover::after { animation: none; display: none; }
 }
 
 /* badges */
