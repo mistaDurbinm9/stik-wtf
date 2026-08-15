@@ -21,6 +21,8 @@ The node itself:
   slot on both boards filled, still running full rated speed (~60 GB/s aggregate,
   benchmarked). Server pulls are a cheat code.
 - 1TB SSD (new — this site lives on it) + 500GB HDD + 240GB HP SSD
+- Dedicated **10GbE ConnectX-3 link** straight to the workstation — measured 9.1 Gb/s
+  RAM-to-RAM, because a spec you haven't benchmarked is a rumor
 - Proxmox VE, one container per service, zero open inbound ports
 
 ## The workstation
