@@ -14,8 +14,12 @@ container, published through Cloudflare Tunnel with **zero open inbound ports**.
 - **AI inference** — CPU llama serving for the [AI workspace](/projects/ai-workspace/)
 - **This site** — Hugo, rebuilt on every push
 
-Full node specs: getting written down next time I'm in front of it.
-<!-- TODO(author): node hardware — CPU, RAM, storage — fill at deploy -->
+The node itself:
+
+- Intel Xeon E5-2690 v2 @ 3.00GHz
+- 384GB RAM (yes, really — server pulls are a cheat code)
+- 500GB HDD + 240GB HP SSD
+- Proxmox VE, one container per service, zero open inbound ports
 
 ## The workstation
 
