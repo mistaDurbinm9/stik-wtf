@@ -2,9 +2,20 @@
 # cloudflared (the tunnel) points at http://localhost:80 in this container.
 # Set up together with the author at deploy time — see SITE_PLAN.md.
 
+# www -> apex (the tunnel passes the Host header through)
+http://www.stik.wtf {
+	redir https://stik.wtf{uri} permanent
+}
+
 :80 {
 	root * /srv/site/public
 	encode gzip
+
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		-Server
+	}
 
 	handle /hook {
 		reverse_proxy 127.0.0.1:8787

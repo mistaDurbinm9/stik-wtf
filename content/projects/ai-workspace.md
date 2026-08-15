@@ -4,9 +4,6 @@ title: AI Workspace
 status: building
 weight: 10
 summary: My main software project — a self-hosted AI workspace to build entire projects in.
-links:
-  - label: ai.stik.wtf (soon)
-    url: https://ai.stik.wtf
 ---
 My main software project, and the most ambitious thing on this site: a self-hosted AI
 workspace. Not just a chat window — a full workspace to build projects in.

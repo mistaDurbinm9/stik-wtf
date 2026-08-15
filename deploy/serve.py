@@ -49,7 +49,7 @@ def uptime_days():
 
 def rebuild():
     subprocess.run(["git", "pull", "--ff-only"], cwd=SITE_DIR, check=True, timeout=120)
-    subprocess.run(["hugo", "--quiet"], cwd=SITE_DIR, check=True, timeout=120)
+    subprocess.run(["hugo", "--quiet", "--minify"], cwd=SITE_DIR, check=True, timeout=120)
 
 
 class Handler(BaseHTTPRequestHandler):

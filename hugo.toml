@@ -2,6 +2,7 @@ baseURL = "https://stik.wtf/"
 title = "stik.wtf"
 locale = "en-us"
 disableKinds = ["taxonomy", "term"]
+enableRobotsTXT = true
 
 [params]
 description = "stik builds real things — a Minecraft server, an AI workspace, a homelab — all self-hosted, all running."

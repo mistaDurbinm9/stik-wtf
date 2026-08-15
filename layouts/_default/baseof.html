@@ -5,6 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{ if .IsHome }}{{ site.Title }}{{ else }}{{ .Title }} · {{ site.Title }}{{ end }}</title>
 <meta name="description" content="{{ .Description | default site.Params.description }}">
+<link rel="canonical" href="{{ .Permalink }}">
+<meta property="og:title" content="{{ if .IsHome }}{{ site.Title }}{{ else }}{{ .Title }} · {{ site.Title }}{{ end }}">
+<meta property="og:description" content="{{ .Description | default site.Params.description }}">
+<meta property="og:url" content="{{ .Permalink }}">
+<meta property="og:type" content="website">
+{{ with .OutputFormats.Get "rss" }}<link rel="alternate" type="application/rss+xml" title="{{ site.Title }}" href="{{ .RelPermalink }}">{{ end }}
 {{ with resources.Get "css/main.css" | minify | fingerprint }}<link rel="stylesheet" href="{{ .RelPermalink }}">{{ end }}
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 </head>
@@ -22,7 +28,7 @@
 {{ block "main" . }}{{ end }}
 </main>
 <footer class="site-foot">
-  <p>© stik — self-hosted on my own metal. · <a href="/wall/">the wall</a></p>
+  <p>© stik — self-hosted on my own metal. · <a href="/wall/">the wall</a> · <a href="/index.xml">rss</a></p>
   <p class="foot-meta"><span id="hits" hidden></span><span id="uptime" hidden></span></p>
 </footer>
 {{ partial "pix-fish.html" . }}
