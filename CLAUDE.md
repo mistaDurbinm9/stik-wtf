@@ -1,8 +1,10 @@
 # stik.wtf — the author's personal site
 
-**Status: BEING DEFINED.** No stack, no design, no code yet — deliberately. The first planning
-session produces `SITE_PLAN.md` (the living plan); until that exists, there is nothing to build.
-Do not scaffold a framework before the plan says which one and why.
+**Status: BUILDING (since 2026-08-14).** The plan exists: `SITE_PLAN.md` (audience, content
+model, workflow, stack, build order) is the source of truth for WHAT gets built; `DESIGN.md`
+is the design system — portable, and referenced by the author's other projects. Stack: Hugo
+(extended) + hand-written CSS; content is markdown under `content/`, layouts under `layouts/`.
+Update content by adding files, not by editing layouts.
 
 ## Purpose, in the author's own framing (2026-08-14)
 

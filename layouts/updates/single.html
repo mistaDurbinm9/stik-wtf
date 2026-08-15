@@ -1,0 +1,8 @@
+{{ define "main" }}
+<article class="page update-page">
+  <p class="update-date">{{ .Date.Format "2006-01-02" }}</p>
+  <h1>{{ .Title }}</h1>
+  {{ .Content }}
+  {{ with .Params.project }}<p><a class="btn" href="/projects/{{ . }}/">← back to project</a></p>{{ end }}
+</article>
+{{ end }}

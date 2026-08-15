@@ -1,0 +1,12 @@
+<ul class="updates">
+  {{ range .updates }}
+  <li class="update">
+    <span class="update-date">{{ .Date.Format "2006-01-02" }}</span>
+    <div class="update-body">
+      {{ if $.showProject }}{{ with .Params.project }}<a class="update-project" href="/projects/{{ . }}/">{{ . }}</a>{{ end }}{{ end }}
+      <strong><a href="{{ .RelPermalink }}">{{ .Title }}</a></strong>
+      <div class="update-text">{{ .Content }}</div>
+    </div>
+  </li>
+  {{ end }}
+</ul>

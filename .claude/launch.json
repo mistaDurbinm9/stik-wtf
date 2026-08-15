@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "hugo",
+      "runtimeExecutable": "C:\\Users\\work\\AppData\\Local\\Microsoft\\WinGet\\Packages\\Hugo.Hugo.Extended_Microsoft.Winget.Source_8wekyb3d8bbwe\\hugo.exe",
+      "runtimeArgs": ["server", "--port", "1313"],
+      "port": 1313
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{{ define "main" }}
+{{ $slug := path.BaseName .File.ContentBaseName }}
+<article class="page project">
+  <div class="project-head">
+    <h1>{{ .Title }}</h1>
+    {{ partial "status-badge.html" . }}
+  </div>
+  {{ with .Params.links }}
+  <p class="project-links">
+    {{ range . }}<a class="btn" href="{{ .url }}">{{ .label }} →</a> {{ end }}
+  </p>
+  {{ end }}
+  {{ .Content }}
+
+  {{ $updates := where (where site.RegularPages "Type" "updates") "Params.project" $slug }}
+  {{ with $updates }}
+  <h2>Updates</h2>
+  {{ partial "updates-list.html" (dict "updates" . "showProject" false) }}
+  {{ end }}
+</article>
+{{ end }}

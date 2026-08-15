@@ -1,0 +1,21 @@
+{{ define "main" }}
+<section class="hero">
+  <h1>I build real things.</h1>
+  <p>{{ .Content }}</p>
+</section>
+
+<section>
+  <h2>Projects</h2>
+  <div class="cards">
+    {{ range sort (where site.RegularPages "Type" "projects") "Weight" }}
+      {{ partial "project-card.html" . }}
+    {{ end }}
+  </div>
+</section>
+
+<section>
+  <h2>Latest</h2>
+  {{ partial "updates-list.html" (dict "updates" (first 5 (where site.RegularPages "Type" "updates")) "showProject" true) }}
+  <p><a class="btn" href="/now/">everything I'm doing →</a></p>
+</section>
+{{ end }}

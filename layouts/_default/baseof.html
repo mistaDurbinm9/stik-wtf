@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ if .IsHome }}{{ site.Title }}{{ else }}{{ .Title }} · {{ site.Title }}{{ end }}</title>
+<meta name="description" content="{{ .Description | default site.Params.description }}">
+{{ with resources.Get "css/main.css" | minify | fingerprint }}<link rel="stylesheet" href="{{ .RelPermalink }}">{{ end }}
+</head>
+<body>
+<header class="site-head">
+  <a class="wordmark" href="/">stik<span class="tld">.wtf</span></a>
+  <nav>
+    <a href="/projects/">projects</a>
+    <a href="/now/">now</a>
+    <a href="/about/">about</a>
+    <a href="/contact/">contact</a>
+  </nav>
+</header>
+<main>
+{{ block "main" . }}{{ end }}
+</main>
+<footer class="site-foot">
+  <p>© stik — self-hosted on my own metal.</p>
+</footer>
+</body>
+</html>

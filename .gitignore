@@ -3,3 +3,6 @@ dist/
 build/
 .env
 graphify-out/
+public/
+resources/_gen/
+.hugo_build.lock

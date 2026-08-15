@@ -1,0 +1,11 @@
+{{ define "main" }}
+<article class="page">
+  <h1>{{ .Title }}</h1>
+  {{ .Content }}
+  <div class="cards">
+    {{ range sort .RegularPages "Weight" }}
+      {{ partial "project-card.html" . }}
+    {{ end }}
+  </div>
+</article>
+{{ end }}
