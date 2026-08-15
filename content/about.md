@@ -1,21 +1,25 @@
 ---
 title: About
 ---
-I'm Tyler — **stik** online. Bay Area, California, somewhere in my twenties, and the honest
-headline is: **still figuring it out, loudly.** This site is the documentation.
+Hey — I'm Tyler. Online I go by **stik**, which is also the guy on the onewheel who rolls
+across the bottom of this site sometimes.
 
-I got here through hardware — building and breaking PCs before I ever wrote real software.
-That escalated. Today a Proxmox node in my house runs everything you see here: the Minecraft
-server, an AI workspace, this site itself. My own metal, my own containers, no rented cloud
-in the loop.
+I'm in my twenties, out in the Bay Area. By day I'm the digital imaging specialist at
+Best Buy; pretty much all the rest of my time goes into the stuff you see here.
 
-By day I'm the digital imaging specialist at Best Buy. The rest of the time I'm building
-the things on this site.
+Hardware came first for me. I was the kid taking machines apart to see what was inside,
+then building my own. At some point "my PC" quietly turned into "my server," and these days
+there's a Proxmox node in my house running everything on this site — the Minecraft server
+my friends and I play on, the AI workspace I'm building, this page you're reading right
+now. Nothing rented, nobody else's cloud. My own metal.
 
-Away from the terminal: I keep aquariums — a hobby that escalated so hard it became an
-actual storefront ([Neoaquatics](/projects/neoaquatics/)). I game, and I've spent years
-cutting montages and edits of it — Minecraft, CoD, whatever I'm deep in. I ride a onewheel.
-Occasionally I read a real paper book.
+Honestly, I'm still figuring out where all of it goes. I'd just rather figure it out loudly
+than quietly — that's most of why this site exists.
 
-If you want the projects, [start here](/projects/). If you want what I'm doing right now,
-[that's here](/now/).
+Off the keyboard: I keep aquariums, and that hobby got so far out of hand it turned into an
+actual store — [Neoaquatics](/projects/neoaquatics/). I've been cutting gaming montages and
+edits for years, mostly Minecraft and CoD, whatever I'm deep in at the time. I ride a
+onewheel. And every once in a while I read an actual paper book.
+
+If you want the projects, [start here](/projects/). If you want what I'm doing this week,
+[that's the now page](/now/).

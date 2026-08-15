@@ -303,5 +303,6 @@ main a:not(.btn):not(.card):hover { background: var(--accent); color: var(--acce
 /* touch devices: bigger targets, since there's no hover to help aim */
 @media (pointer: coarse) {
   .btn { padding: 10px 16px; }
-  .wordmark .tld { padding: 8px 6px; margin: -8px -6px; }
 }
+
+.fish-egg { cursor: pointer; }

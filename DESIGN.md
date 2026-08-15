@@ -106,9 +106,10 @@ The web-revival layer, animated. Rules that keep sprites on-theme instead of tac
   - click burst: 6 pixels scatter in `steps(5)` and vanish
   - stik's ride: 2-frame bob on the onewheel, rolling along the bottom edge on
     ~1-in-5 page loads — the ambient slot belongs to the mascot
-  - the fish: demoted with honor — the wall's adoptable, the 404 critter, and typing
-    `w t f` (or tapping the `.wtf` in the wordmark — the touch path; every egg needs one)
-    still summons a school of eight (a school of stick figures is nonsense)
+  - the fish: demoted with honor — a wall adoptable alongside stik, the 404 critter, and
+    typing `w t f` (or tapping any fish sprite on the site — the touch path; every egg
+    needs one, but it must never hijack navigation) still summons a school of eight
+    (a school of stick figures is nonsense)
 - **Ration the ambience:** at most one ambient sprite event per page load. Easter eggs stay
   eggs by being rare.
 - **`prefers-reduced-motion: reduce` disables every sprite.** Non-negotiable.

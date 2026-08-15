@@ -58,11 +58,9 @@ document.addEventListener('keydown', function (e) {
   seq = (seq + e.key).slice(-3);
   if (seq === 'wtf') { summonSchool(); seq = ''; }
 });
+// the touch path: tapping any fish on the site summons the school
 document.addEventListener('click', function (e) {
-  var tld = e.target.closest('.wordmark .tld');
-  if (!tld) return;
-  e.preventDefault(); // the ".wtf" is the egg; "stik" still navigates home
-  summonSchool();
+  if (e.target.closest('.fish-egg')) summonSchool();
 });
 
 // ---- live minecraft status ----
