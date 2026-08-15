@@ -19,6 +19,22 @@ not limited to those. The site is the author's public surface.
 - **This project is SEPARATE from Outis and from the neoaquatics storefront.** Their repos and
   docs are not task sources here. Shared reality: same node, different tenant.
 
+## The domain and the node today (as of 2026-08-14 — verify with the author, don't assume)
+
+**stik.wtf's subdomain map** — the site must coexist with these, and can link to them:
+- apex + `www` → THIS SITE (to be built; orange-cloud via the tunnel).
+- `play.stik.wtf` → the author's Minecraft server (Fabric + Geyser, self-hosted on the node,
+  migrated 2026-08-14). DNS-only/grey forever; never touched by this project.
+- `ai.stik.wtf` → planned: the author's self-hosted AI workspace (their main software project,
+  a separate repo), interim access behind Cloudflare Access, invite-only.
+- The author also runs `neoaquatics.com` (a storefront, its own project/tenant).
+
+**The server (Proxmox node)** already hosts: an AI-inference container (CPU llama serving for
+the author's AI project) and the Minecraft container (16GB heap, 32GB cap); a storefront tenant
+is planned. This site is one more SMALL tenant — a website container's resource needs are
+negligible next to those, so plan freely; container specs and the tunnel connector get decided
+with the author at deploy time.
+
 ## Design constraints to honor when planning
 
 - **Low-friction updates or it rots**: "what I'm working on" changes weekly; if updating
