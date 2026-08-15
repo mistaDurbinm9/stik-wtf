@@ -267,6 +267,7 @@ main a:not(.btn):not(.card):hover { background: var(--accent); color: var(--acce
 /* the wall */
 .badge-strip { display: flex; flex-wrap: wrap; gap: 8px; margin: 1rem 0; }
 .badge-strip img { image-rendering: pixelated; }
+.own-button img { image-rendering: pixelated; border: var(--border-w) solid var(--ink); box-shadow: var(--shadow-offset) var(--shadow-offset) 0 var(--shadow); }
 .snippet {
   background: var(--surface);
   border: var(--border-w) solid var(--ink);

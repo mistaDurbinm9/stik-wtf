@@ -6,12 +6,13 @@
   <h2>badges</h2>
   <div class="badge-strip">
     {{ range slice "stik-wtf" "self-hosted" "made-with-hugo" "powered-by-proxmox" "best-viewed-with-eyes" }}
-    <img src="/badges/{{ . }}.svg" width="88" height="31" alt="{{ . }} 88x31 badge">
+    <img src="/badges/{{ . }}.svg" width="88" height="31" alt="{{ . }} 88x31 badge" title="{{ . }}">
     {{ end }}
   </div>
 
   <h2>take my button</h2>
-  <p>The old rules: put my 88x31 on your wall, send me yours, I'll put it on mine.</p>
+  <p class="own-button"><img src="/badges/stik-wtf.svg" width="176" height="62" alt="the stik.wtf 88x31 badge, shown at double size"></p>
+  <p>This is the site's own 88x31. The old rules: put it on your wall, send me yours, I'll put it on mine.</p>
   <pre class="snippet"><code id="snip-button">&lt;a href="https://stik.wtf"&gt;&lt;img src="https://stik.wtf/badges/stik-wtf.svg" width="88" height="31" alt="stik.wtf"&gt;&lt;/a&gt;</code></pre>
   <p><button class="btn copy-snip" type="button" data-copy-target="snip-button">COPY</button></p>
 
