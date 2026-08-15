@@ -325,3 +325,29 @@ main a:not(.btn):not(.card):hover { background: var(--accent); color: var(--acce
 }
 
 .fish-egg { cursor: pointer; }
+
+/* webrings on the wall */
+.webring { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.webring-name { font-family: var(--mono); font-size: 0.85rem; }
+.webring-name em { color: var(--muted); font-style: normal; font-size: 0.75rem; }
+@media (prefers-color-scheme: dark) {
+  .webring-icon { filter: invert(1); }
+}
+
+/* guestbook */
+.gb-form { display: flex; flex-direction: column; gap: 6px; max-width: 46ch; margin: 1.4rem 0 2rem; }
+.gb-form label { font-family: var(--mono); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+.gb-form input, .gb-form textarea {
+  font-family: var(--font);
+  font-size: 1rem;
+  color: var(--ink);
+  background: var(--surface);
+  border: var(--border-w) solid var(--ink);
+  border-radius: var(--radius);
+  padding: 8px 10px;
+  resize: vertical;
+}
+.gb-form input:focus, .gb-form textarea:focus { outline: var(--border-w) solid var(--accent); outline-offset: 2px; }
+.gb-form .btn { align-self: flex-start; margin-top: 4px; }
+.gb-website { position: absolute; left: -9999px; }  /* honeypot: humans never see it */
+#gb-status { font-family: var(--mono); font-size: 0.8rem; color: var(--muted); }

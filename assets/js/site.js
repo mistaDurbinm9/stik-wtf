@@ -126,6 +126,70 @@ document.addEventListener('click', function (e) {
   });
 });
 
+// ---- guestbook ----
+(function () {
+  var form = document.getElementById('gb-form');
+  if (!form) return;
+  var list = document.getElementById('gb-entries');
+  var empty = document.getElementById('gb-empty');
+  var status = document.getElementById('gb-status');
+
+  function row(e) {
+    var li = document.createElement('li');
+    li.className = 'update';
+    var date = document.createElement('span');
+    date.className = 'update-date';
+    date.textContent = new Date(e.t * 1000).toISOString().slice(0, 10);
+    var body = document.createElement('div');
+    body.className = 'update-body';
+    var name = document.createElement('strong');
+    name.textContent = e.name; // textContent everywhere: entries are untrusted
+    var msg = document.createElement('div');
+    msg.className = 'update-text';
+    msg.textContent = e.msg;
+    body.appendChild(name);
+    body.appendChild(msg);
+    li.appendChild(date);
+    li.appendChild(body);
+    return li;
+  }
+
+  fetch('/api/guestbook')
+    .then(function (r) { if (!r.ok) throw 0; return r.json(); })
+    .then(function (j) {
+      var entries = (j.entries || []).reverse(); // newest first
+      entries.forEach(function (e) { list.appendChild(row(e)); });
+      empty.hidden = entries.length > 0;
+    })
+    .catch(function () { status.textContent = 'the book is unreachable right now.'; });
+
+  form.addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    status.textContent = 'signing…';
+    fetch('/api/guestbook', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: document.getElementById('gb-name').value,
+        msg: document.getElementById('gb-msg').value,
+        website: document.getElementById('gb-website').value
+      })
+    })
+      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+      .then(function (res) {
+        if (res.ok && res.j.entry) {
+          list.insertBefore(row(res.j.entry), list.firstChild);
+          empty.hidden = true;
+          form.reset();
+          status.textContent = 'signed. ✓';
+        } else {
+          status.textContent = res.j.err || 'that did not work.';
+        }
+      })
+      .catch(function () { status.textContent = 'that did not work.'; });
+  });
+})();
+
 // ---- hit counter + uptime (lights up once the node endpoints exist) ----
 (function () {
   var hits = document.getElementById('hits');
