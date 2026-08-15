@@ -1,13 +1,13 @@
 // stik.wtf interactivity. Rules: sprites move in steps(), nothing tweens.
 
-// ---- pixel burst on button click ----
+// ---- pixel burst on click: 6 pixels on buttons, 3 anywhere else ----
 document.addEventListener('pointerdown', function (e) {
   var btn = e.target.closest('.btn, .mc-copy');
-  if (!btn) return;
-  for (var i = 0; i < 6; i++) {
+  var n = btn ? 6 : 3;
+  for (var i = 0; i < n; i++) {
     var p = document.createElement('span');
     p.className = 'pix';
-    var a = (Math.PI * 2 * i) / 6 + Math.random();
+    var a = (Math.PI * 2 * i) / n + Math.random();
     p.style.left = e.clientX + 'px';
     p.style.top = e.clientY + 'px';
     p.style.setProperty('--dx', Math.round(Math.cos(a) * (14 + Math.random() * 14)) + 'px');

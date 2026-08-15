@@ -106,7 +106,8 @@ The web-revival layer, animated. Rules that keep sprites on-theme instead of tac
   `layouts/partials/pix-fish.html`, sprite blocks in `assets/css/main.css`,
   `assets/js/site.js`):
   - hover spark: 2-frame pixel blink at a button's corner
-  - click burst: 6 pixels scatter in `steps(5)` and vanish
+  - click burst: pixels scatter in `steps(5)` and vanish — 6 on buttons, 3 anywhere else;
+    the whole page is tactile, buttons just more so
   - stik's ride: 2-frame bob on the onewheel, rolling along the bottom edge on
     ~1-in-5 page loads — the ambient slot belongs to the mascot
   - the fish: demoted with honor — a wall adoptable alongside stik, the 404 critter, and
@@ -122,7 +123,9 @@ The web-revival layer, animated. Rules that keep sprites on-theme instead of tac
   borrowed characters), llama (AI — it IS llama serving), server rack with blinking LED
   (homelab), fish tank with bubbles (neoaquatics), ticking clock (now), envelope with
   notification pixel (contact). Margin decorations (the Minecraft floating islands) are
-  allowed only where real empty margin exists — hidden below ~1120px viewport width.
+  allowed only where real empty margin exists — hidden below ~1120px viewport width. The
+  islands carry a baked Minecraft palette (grass/dirt/stone) under the same artifact
+  exemption as the badges: an artifact depicting a thing wears that thing's colors.
 - **Ration the ambience:** at most one ambient sprite event per page load, one page sprite
   per page. Easter eggs stay eggs by being rare.
 - **`prefers-reduced-motion: reduce` disables every sprite.** Non-negotiable.
