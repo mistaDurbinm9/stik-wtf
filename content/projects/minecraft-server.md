@@ -2,8 +2,12 @@
 title: Minecraft Server
 status: live
 weight: 20
-summary: Fabric + Geyser server at play.stik.wtf — join from Java or Bedrock.
+summary: Vanilla+ survival at play.stik.wtf — Java and Bedrock share one world. Whitelisted, but ask.
 ---
-A Fabric server with Geyser, so Java and Bedrock players share one world. Self-hosted in its own container on my node. Address: `play.stik.wtf`.
+A vanilla+ survival server: Fabric under the hood for performance and quality-of-life, not
+gameplay overhauls — and Geyser on top, so Java and Bedrock players share one world.
 
-<!-- TODO(author): what the server's about — vanilla+? modded? whitelist or open? -->
+It's whitelisted, but not closed. Want in? Reach me through the [contact page](/contact/)
+and we'll talk.
+
+Address: `play.stik.wtf` — self-hosted in its own container on [my node](/projects/homelab/).
