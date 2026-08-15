@@ -172,7 +172,10 @@ the motion mechanics, mono-for-metadata, weight-900 headings, the dark-mode swap
 
 **Swap per project (this is the brand):**
 - `--accent` (+ recheck `--accent-ink` contrast). stik.wtf: purple `#B026FF`.
-  Suggestion-shaped, not decided: neoaquatics wants an aquatic accent; Outis picks its own.
+  In the family so far: neoaquatics.com runs a committed-dark terminal variant — near-black
+  blue bg, emerald accent family, all-mono, zero-radius `.EXE` window chrome. Same bones
+  (mono metadata, uppercase labels, hard edges, one accent hue), own creature. Outis picks
+  its own when its turn comes.
 - Background temperature (`--bg`/`--surface` tint) — warm paper here; a storefront might
   run cooler.
 - Density: a storefront needs tighter cards and product grids — keep the box, shrink the
