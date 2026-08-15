@@ -18,7 +18,7 @@ The node itself:
 
 - Intel Xeon E5-2690 v2 @ 3.00GHz
 - 384GB RAM (yes, really — server pulls are a cheat code)
-- 500GB HDD + 240GB HP SSD
+- 1TB SSD (new — this site lives here) + 500GB HDD + 240GB HP SSD
 - Proxmox VE, one container per service, zero open inbound ports
 
 ## The workstation
