@@ -10,6 +10,7 @@
     {{ range . }}<a class="btn" href="{{ .url }}">{{ .label }} →</a> {{ end }}
   </p>
   {{ end }}
+  {{ if eq .Params.status "building" }}<div class="construction" role="img" aria-label="under construction"><span>UNDER CONSTRUCTION</span></div>{{ end }}
   {{ with .Params.mc_address }}{{ partial "mc-status.html" . }}{{ end }}
   {{ .Content }}
 

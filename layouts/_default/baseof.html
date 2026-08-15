@@ -22,7 +22,8 @@
 {{ block "main" . }}{{ end }}
 </main>
 <footer class="site-foot">
-  <p>© stik — self-hosted on my own metal.</p>
+  <p>© stik — self-hosted on my own metal. · <a href="/wall/">the wall</a></p>
+  <p class="foot-meta"><span id="hits" hidden></span><span id="uptime" hidden></span></p>
 </footer>
 {{ partial "pix-fish.html" . }}
 {{ with resources.Get "js/site.js" | minify | fingerprint }}<script src="{{ .RelPermalink }}" defer></script>{{ end }}

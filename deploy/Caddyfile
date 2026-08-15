@@ -1,0 +1,19 @@
+# stik.wtf container — Caddy serves the static build; serve.py handles the dynamic bits.
+# cloudflared (the tunnel) points at http://localhost:80 in this container.
+# Set up together with the author at deploy time — see SITE_PLAN.md.
+
+:80 {
+	root * /srv/site/public
+	encode gzip
+
+	handle /hook {
+		reverse_proxy 127.0.0.1:8787
+	}
+	handle /api/* {
+		reverse_proxy 127.0.0.1:8787
+	}
+	handle {
+		try_files {path} {path}/ /404.html
+		file_server
+	}
+}

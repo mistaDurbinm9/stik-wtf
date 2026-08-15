@@ -126,10 +126,17 @@ output + files-in-git is the boring, durable choice and makes the "tell Claude" 
 
 **Later, when earned:**
 
-8. Retro easter eggs: badge wall, guestbook-style page, a REAL hit counter (needs a tiny
-   endpoint on the node — pairs naturally with the deploy-time webhook listener), maybe a
-   footer uptime line fed by the node.
-9. Writing section — only if update entries start wanting to be essays.
+8. ~~Retro easter eggs~~ **mostly shipped 2026-08-14** after web-revival research: the wall
+   at `/wall` (hand-made 88x31 badges, copyable own-button snippet, the adoptable fish),
+   under-construction banner on `status: building` projects, hit-counter + node-uptime
+   footer front-ends (hidden until their endpoints exist). `deploy/serve.py` (stdlib
+   Python, self-tested) is the node-side helper: webhook rebuild + `/api/count` +
+   `/api/uptime`; `deploy/Caddyfile` sketches the container's web server. Both get wired
+   up with the author at deploy.
+9. Still later, author-gated: guestbook (serve.py grows an endpoint; needs a spam think),
+   joining a real webring (author picks the community), friends link-roll on the wall
+   (needs real links), per-page "for you" downloads if ever warranted.
+10. Writing section — only if update entries start wanting to be essays.
 
 ## Standing rules (from CLAUDE.md, restated so this doc is self-contained)
 

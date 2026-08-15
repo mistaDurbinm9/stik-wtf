@@ -96,3 +96,41 @@ if (mc) {
     });
   });
 }
+
+// ---- snippet copy buttons (the wall) ----
+document.addEventListener('click', function (e) {
+  var b = e.target.closest('.copy-snip');
+  if (!b) return;
+  var t = document.getElementById(b.getAttribute('data-copy-target'));
+  if (!t) return;
+  navigator.clipboard.writeText(t.textContent).then(function () {
+    b.textContent = 'COPIED ✓';
+    setTimeout(function () { b.textContent = 'COPY'; }, 1200);
+  });
+});
+
+// ---- hit counter + uptime (lights up once the node endpoints exist) ----
+(function () {
+  var hits = document.getElementById('hits');
+  var up = document.getElementById('uptime');
+  if (hits) {
+    var peek = sessionStorage.getItem('counted') ? '?peek=1' : '';
+    fetch('/api/count' + peek)
+      .then(function (r) { if (!r.ok) throw 0; return r.json(); })
+      .then(function (j) {
+        try { sessionStorage.setItem('counted', '1'); } catch (e) {}
+        hits.textContent = 'you are visitor #' + String(j.n).padStart(6, '0');
+        hits.hidden = false;
+      })
+      .catch(function () {}); // no endpoint (dev / pre-deploy): stay hidden
+  }
+  if (up) {
+    fetch('/api/uptime')
+      .then(function (r) { if (!r.ok) throw 0; return r.json(); })
+      .then(function (j) {
+        up.textContent = ' · node up ' + j.days + 'd';
+        up.hidden = false;
+      })
+      .catch(function () {});
+  }
+})();

@@ -1,0 +1,26 @@
+{{ define "main" }}
+<article class="page">
+  <h1>{{ .Title }}</h1>
+  {{ .Content }}
+
+  <h2>badges</h2>
+  <div class="badge-strip">
+    {{ range slice "stik-wtf" "self-hosted" "made-with-hugo" "powered-by-proxmox" "best-viewed-with-eyes" }}
+    <img src="/badges/{{ . }}.svg" width="88" height="31" alt="{{ . }} 88x31 badge">
+    {{ end }}
+  </div>
+
+  <h2>take my button</h2>
+  <p>The old rules: put my 88x31 on your wall, send me yours, I'll put it on mine.</p>
+  <pre class="snippet"><code id="snip-button">&lt;a href="https://stik.wtf"&gt;&lt;img src="https://stik.wtf/badges/stik-wtf.svg" width="88" height="31" alt="stik.wtf"&gt;&lt;/a&gt;</code></pre>
+  <p><button class="btn copy-snip" type="button" data-copy-target="snip-button">COPY</button></p>
+
+  <h2>adopt the fish</h2>
+  <p><img src="/fish.svg" width="54" height="36" alt="the stik.wtf pixel fish"> The site mascot is an adoptable — take it home, it links back here.</p>
+  <pre class="snippet"><code id="snip-fish">&lt;a href="https://stik.wtf"&gt;&lt;img src="https://stik.wtf/fish.svg" width="36" height="24" alt="a fish adopted from stik.wtf"&gt;&lt;/a&gt;</code></pre>
+  <p><button class="btn copy-snip" type="button" data-copy-target="snip-fish">COPY</button></p>
+
+  <h2>friends</h2>
+  <p>Your 88x31 here — <a href="/contact/">send it to me</a>.</p>
+</article>
+{{ end }}

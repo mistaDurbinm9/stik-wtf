@@ -116,10 +116,19 @@ The web-revival layer, animated. Rules that keep sprites on-theme instead of tac
 
 ## Web-revival easter eggs (the "between" part)
 
-Rare, genuine, post-launch: an 88x31 badge wall, a guestbook-style page. Rules: real
-artifacts only (actual 88x31 GIFs, not modern imitations), confined to their own corner,
-never in the core navigation/reading path. One or two total. If it's everywhere, it's a
-theme, not an easter egg.
+Rare, genuine, confined to their own corner — never in the core navigation/reading path.
+If it's everywhere, it's a theme, not an easter egg. The vocabulary on stik.wtf:
+
+- **The wall** (`/wall`, linked only from the footer): the 88x31 badge strip, the site's
+  own copyable button, and the adoptable fish. Badges are hand-made 88x31 SVGs with the
+  palette **baked in** (artifacts are static images — they do not theme-swap), monospace
+  type, 2px borders, `crispEdges`. A site's own button + "send me yours" is the genuine
+  reciprocal-linking tradition, not decoration.
+- **Under-construction banner**: caution stripes in accent/ink (not hazard yellow — the
+  artifact adapts to the system palette), shown automatically on `status: building` pages.
+- **Hit counter + uptime line**: real numbers from the author's own server or nothing —
+  never faked. Hidden until the backing endpoint exists.
+- Future, author-gated: guestbook, joining a real webring, a friends link-roll on the wall.
 
 ## Accessibility floor (non-negotiable)
 
