@@ -68,11 +68,12 @@ main, .site-head, .site-foot {
   color: var(--ink);
 }
 .wordmark .tld { color: var(--accent); }
-.site-head nav { display: flex; gap: 18px; }
+.site-head nav { display: flex; gap: 16px; }
 .site-head nav a {
   color: var(--ink);
   font-weight: 700;
   text-decoration: none;
+  padding: 8px 2px;
   border-bottom: var(--border-w) solid transparent;
 }
 .site-head nav a:hover { border-bottom-color: var(--accent); }
@@ -297,4 +298,10 @@ main a:not(.btn):not(.card):hover { background: var(--accent); color: var(--acce
 
 @media (max-width: 520px) {
   .update { flex-direction: column; gap: 2px; }
+}
+
+/* touch devices: bigger targets, since there's no hover to help aim */
+@media (pointer: coarse) {
+  .btn { padding: 10px 16px; }
+  .wordmark .tld { padding: 8px 6px; margin: -8px -6px; }
 }

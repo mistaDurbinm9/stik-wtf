@@ -48,15 +48,21 @@ function spawnStik(delay) {
 // occasional ambient ride-by: 1 in 5 page loads
 if (Math.random() < 0.2) spawnStik(5000 + Math.random() * 10000);
 
-// typing "wtf" summons the school
+// typing "wtf" — or tapping the ".wtf" in the wordmark — summons the school
+function summonSchool() {
+  for (var i = 0; i < 8; i++) spawnFish(i * 350 + Math.random() * 200);
+}
 var seq = '';
 document.addEventListener('keydown', function (e) {
   if (e.target instanceof Element && e.target.closest('input, textarea, select')) return;
   seq = (seq + e.key).slice(-3);
-  if (seq === 'wtf') {
-    for (var i = 0; i < 8; i++) spawnFish(i * 350 + Math.random() * 200);
-    seq = '';
-  }
+  if (seq === 'wtf') { summonSchool(); seq = ''; }
+});
+document.addEventListener('click', function (e) {
+  var tld = e.target.closest('.wordmark .tld');
+  if (!tld) return;
+  e.preventDefault(); // the ".wtf" is the egg; "stik" still navigates home
+  summonSchool();
 });
 
 // ---- live minecraft status ----
