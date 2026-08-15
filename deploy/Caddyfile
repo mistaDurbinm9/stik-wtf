@@ -24,7 +24,11 @@ http://www.stik.wtf {
 		reverse_proxy 127.0.0.1:8787
 	}
 	handle {
-		try_files {path} {path}/ /404.html
+		try_files {path} {path}/
+		file_server
+	}
+	handle_errors {
+		rewrite * /404.html
 		file_server
 	}
 }
