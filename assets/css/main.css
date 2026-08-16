@@ -33,6 +33,10 @@
 
 * { box-sizing: border-box; }
 
+/* the hidden attribute must win: .card/.gb-form set display, which would otherwise
+   override the browser default and leave "hidden" elements on screen. */
+[hidden] { display: none !important; }
+
 body {
   margin: 0;
   background: var(--bg);
