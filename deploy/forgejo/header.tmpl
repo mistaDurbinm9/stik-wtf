@@ -1,0 +1,7 @@
+<!-- Cache-busted theme load.
+     Forgejo's own stylesheet URL only changes when Forgejo is upgraded, so a browser
+     that cached theme-stik.css keeps the old skin for the life of its cache entry.
+     This extra link uses a version we control: bump ?b= on every theme change and
+     returning visitors get the new look immediately. It loads after Forgejo's copy,
+     so identical rules win on order. -->
+<link rel="stylesheet" href="/assets/css/theme-stik.css?b=3">

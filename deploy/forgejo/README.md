@@ -44,6 +44,19 @@ To switch to open-with-approval instead, set `DISABLE_REGISTRATION = false` and
 
 `STATIC_CACHE_TIME = 2m` (was 6h) so theme edits show up promptly.
 
+## Cache-busting (important when editing the theme)
+
+Forgejo appends `?v=<forgejo-version>` to its stylesheet URL, so a browser that cached
+`theme-stik.css` keeps the old skin until its cache entry expires — a hard refresh on iOS
+does not reliably clear it. Two mechanisms work around that, and **both need bumping when
+you change the theme**:
+
+- `header.tmpl` → `templates/custom/header.tmpl` loads `theme-stik.css?b=N` after
+  Forgejo's own copy. Bump `N`.
+- The navbar logo is drawn by CSS as `background: url(logo.svg?v=N)` with the stock
+  `<img>` hidden, because `/assets/img/logo.svg` is a fixed path a browser will happily
+  serve from cache forever. Bump that `N` too when the logo changes.
+
 ## Notes for whoever edits this next
 
 - **Re-run the base fetch after a Forgejo upgrade.** The stock theme is embedded in the
