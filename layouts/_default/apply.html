@@ -1,0 +1,45 @@
+{{ define "main" }}
+<article class="page">
+  {{ partial "page-sprite.html" . }}
+  <h1>{{ .Title }}</h1>
+  {{ .Content }}
+
+  <form id="apply-form" class="gb-form apply-form" autocomplete="off">
+    <label for="ap-mcname">minecraft name <span class="req">required</span></label>
+    <input id="ap-mcname" name="mcname" type="text" maxlength="32" required placeholder="exactly as it appears in game">
+
+    <label for="ap-platform">java or bedrock?</label>
+    <select id="ap-platform" name="platform">
+      <option value="java">Java</option>
+      <option value="bedrock">Bedrock</option>
+      <option value="both">both</option>
+    </select>
+
+    <label for="ap-discord">discord handle</label>
+    <input id="ap-discord" name="discord" type="text" maxlength="40" placeholder="so I can reach you">
+
+    <label for="ap-age">age <span class="hint">(optional — helps me keep the vibe right)</span></label>
+    <input id="ap-age" name="age" type="text" maxlength="12" placeholder="or a range">
+
+    <label for="ap-found">how did you find the server?</label>
+    <input id="ap-found" name="found" type="text" maxlength="120" placeholder="a friend, this site, elsewhere…">
+
+    <label for="ap-why">why do you want to play here? <span class="req">required</span></label>
+    <textarea id="ap-why" name="why" rows="4" maxlength="800" required placeholder="what you're hoping for out of a small vanilla+ server"></textarea>
+
+    <label for="ap-exp">what do you like to build or do in game?</label>
+    <textarea id="ap-exp" name="experience" rows="3" maxlength="800" placeholder="redstone, farms, giant ugly cobblestone towers — no wrong answers"></textarea>
+
+    <div class="gb-website"><label for="ap-website">website</label><input id="ap-website" name="website" type="text" tabindex="-1"></div>
+
+    <button class="btn" type="submit">SEND APPLICATION →</button>
+    <p class="chat-status" id="apply-status" role="status"></p>
+  </form>
+
+  <div id="apply-done" class="card" hidden>
+    <div class="card-top"><h3>sent.</h3><span class="badge badge-live">QUEUED</span></div>
+    <p>It lands in my inbox. I'll follow up on Discord if you left a handle — if not, keep an
+      eye on <a href="/chat/">the shoutbox</a>. No rush, no algorithm, just me reading it.</p>
+  </div>
+</article>
+{{ end }}

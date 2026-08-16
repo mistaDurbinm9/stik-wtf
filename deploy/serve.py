@@ -12,6 +12,14 @@ Endpoints (Caddy proxies /hook and /api/* here, serves everything else static):
                        presence (online = IPs seen in the last 60s)
   POST /api/chat       JSON {name, msg, website}; honeypot; no URLs allowed;
                        1 msg / 10s and 30 msgs / hour per IP
+  POST /api/apply         whitelist application; honeypot; 1 per IP per 10 min.
+                          Emails the owner a capability link if SMTP_* env is set.
+  GET  /api/apply/get     ?id=&t=  -> the application, only with its secret token
+  POST /api/apply/decide  JSON {id, t, decision: approve|deny, note}
+
+Email (optional — everything works without it, applications just queue up):
+  SMTP_HOST (default smtp.gmail.com), SMTP_PORT (587), SMTP_USER, SMTP_PASS, MAIL_TO.
+  With Gmail use an app password, and put it in the systemd unit, not in this file.
 
 Env: HOOK_SECRET (GitHub webhook secret), SITE_DIR (repo checkout, default /srv/site).
 Run: HOOK_SECRET=... python3 serve.py            (listens on 127.0.0.1:8787)
@@ -24,6 +32,7 @@ import hashlib
 import hmac
 import json
 import os
+import secrets
 import subprocess
 import threading
 import time
@@ -33,11 +42,14 @@ SITE_DIR = os.environ.get("SITE_DIR", "/srv/site")
 COUNT_FILE = os.path.join(SITE_DIR, ".hits")
 GB_FILE = os.environ.get("GB_FILE", "/var/lib/stik/guestbook.jsonl")
 CHAT_FILE = os.environ.get("CHAT_FILE", "/var/lib/stik/chat.jsonl")
+APPS_FILE = os.environ.get("APPS_FILE", "/var/lib/stik/applications.jsonl")
+SITE_URL = os.environ.get("SITE_URL", "https://stik.wtf")
 LOCK = threading.Lock()
 GB_LAST_POST = {}   # ponytail: in-memory per-IP rate limits, reset on restart — fine here
 CHAT_LAST = {}      # ip -> last message ts (10s gap)
 CHAT_HOURLY = {}    # ip -> [count, window_start] (30/hour)
 CHAT_SEEN = {}      # ip -> last poll ts, for the "online" count
+APPLY_LAST = {}     # ip -> last application ts (10 min gap)
 URL_RE = None  # compiled lazily below
 
 
@@ -110,6 +122,107 @@ def chat_add(name, msg, path=None):
     return entry
 
 
+# ---- whitelist applications ----
+APP_FIELDS = ("mcname", "platform", "discord", "age", "found", "why", "experience")
+APP_LIMITS = {"mcname": 32, "platform": 12, "discord": 40, "age": 12,
+              "found": 120, "why": 800, "experience": 800}
+
+
+def apply_add(body, path=None):
+    """Validate + store one application. Returns the record, or None if unusable."""
+    path = path or APPS_FILE
+    rec = {k: (str(body.get(k) or "")).strip()[:APP_LIMITS[k]] for k in APP_FIELDS}
+    if not rec["mcname"] or not rec["why"]:
+        return None
+    rec.update(id=secrets.token_hex(4), token=secrets.token_urlsafe(24),
+               t=int(time.time()), status="new", note="", decided_t=0)
+    with LOCK:
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(rec) + "\n")
+    return rec
+
+
+def apply_all(path=None):
+    try:
+        with open(path or APPS_FILE, encoding="utf-8") as f:
+            return [json.loads(line) for line in f if line.strip()]
+    except FileNotFoundError:
+        return []
+
+
+def apply_get(app_id, token, path=None):
+    for rec in apply_all(path):
+        if rec["id"] == app_id and secrets.compare_digest(rec["token"], token):
+            return rec
+    return None
+
+
+def apply_decide(app_id, token, decision, note="", path=None):
+    """Rewrite the log with this application's status changed. Idempotent per decision."""
+    path = path or APPS_FILE
+    if decision not in ("approve", "deny"):
+        return None
+    with LOCK:
+        recs = apply_all(path)
+        hit = None
+        for rec in recs:
+            if rec["id"] == app_id and secrets.compare_digest(rec["token"], token):
+                rec["status"] = "approved" if decision == "approve" else "denied"
+                rec["note"] = (note or "").strip()[:500]
+                rec["decided_t"] = int(time.time())
+                hit = rec
+        if hit:
+            tmp = path + ".tmp"
+            with open(tmp, "w", encoding="utf-8") as f:
+                for rec in recs:
+                    f.write(json.dumps(rec) + "\n")
+            os.replace(tmp, path)
+    return hit
+
+
+def send_mail(subject, body):
+    """Best-effort notification. No SMTP configured -> return False, never raise."""
+    user, pw, to = (os.environ.get("SMTP_USER"), os.environ.get("SMTP_PASS"),
+                    os.environ.get("MAIL_TO"))
+    if not (user and pw and to):
+        return False
+    import smtplib
+    from email.message import EmailMessage
+    msg = EmailMessage()
+    msg["Subject"] = subject
+    msg["From"] = user
+    msg["To"] = to
+    msg.set_content(body)
+    try:
+        host = os.environ.get("SMTP_HOST", "smtp.gmail.com")
+        port = int(os.environ.get("SMTP_PORT", "587"))
+        with smtplib.SMTP(host, port, timeout=20) as s:
+            s.starttls()
+            s.login(user, pw)
+            s.send_message(msg)
+        return True
+    except Exception as e:                      # notification must never break the form
+        print("mail failed:", e, flush=True)
+        return False
+
+
+def apply_email_body(rec):
+    link = "%s/apply/review/?id=%s&t=%s" % (SITE_URL, rec["id"], rec["token"])
+    lines = ["New whitelist application for play.stik.wtf", "",
+             "Minecraft name: " + rec["mcname"],
+             "Platform:       " + (rec["platform"] or "-"),
+             "Discord:        " + (rec["discord"] or "-"),
+             "Age:            " + (rec["age"] or "-"),
+             "Found via:      " + (rec["found"] or "-"), "",
+             "Why they want in:", rec["why"], ""]
+    if rec["experience"]:
+        lines += ["Experience / what they build:", rec["experience"], ""]
+    lines += ["Review, approve or deny:", link, "",
+              "(That link is the only key to this application — anyone with it can decide.)"]
+    return "\n".join(lines)
+
+
 def uptime_seconds():
     with open("/proc/uptime") as f:
         return int(float(f.read().split()[0]))
@@ -142,6 +255,16 @@ class Handler(BaseHTTPRequestHandler):
             self._json(200, {"seconds": s, "days": s // 86400})
         elif self.path == "/api/guestbook":
             self._json(200, {"entries": gb_list()})
+        elif self.path.startswith("/api/apply/get"):
+            from urllib.parse import parse_qs, urlparse
+            q = parse_qs(urlparse(self.path).query)
+            rec = apply_get((q.get("id") or [""])[0], (q.get("t") or [""])[0])
+            if not rec:
+                return self._json(404, {"err": "no such application"})
+            safe = {k: rec[k] for k in APP_FIELDS}
+            safe.update(id=rec["id"], t=rec["t"], status=rec["status"],
+                        note=rec["note"], decided_t=rec["decided_t"])
+            self._json(200, safe)
         elif self.path.startswith("/api/chat"):
             since = 0.0
             if "since=" in self.path:
@@ -158,6 +281,34 @@ class Handler(BaseHTTPRequestHandler):
             self._json(404, {"err": "not found"})
 
     def do_POST(self):
+        if self.path == "/api/apply":
+            try:
+                body = json.loads(self.rfile.read(int(self.headers.get("Content-Length", 0)) or 0) or b"{}")
+            except (ValueError, TypeError):
+                return self._json(400, {"err": "bad json"})
+            if (body.get("website") or "").strip():
+                return self._json(200, {"ok": True})        # honeypot
+            ip = self._client_ip()
+            now = time.time()
+            if now - APPLY_LAST.get(ip, 0) < 600:
+                return self._json(429, {"err": "one application per 10 minutes — I only need the one"})
+            rec = apply_add(body)
+            if not rec:
+                return self._json(400, {"err": "minecraft name and a reason are both required"})
+            APPLY_LAST[ip] = now
+            mailed = send_mail("whitelist application: " + rec["mcname"], apply_email_body(rec))
+            print("application %s from %s (mailed=%s)" % (rec["id"], rec["mcname"], mailed), flush=True)
+            return self._json(200, {"ok": True, "queued": True})
+        if self.path == "/api/apply/decide":
+            try:
+                body = json.loads(self.rfile.read(int(self.headers.get("Content-Length", 0)) or 0) or b"{}")
+            except (ValueError, TypeError):
+                return self._json(400, {"err": "bad json"})
+            rec = apply_decide(body.get("id", ""), body.get("t", ""),
+                               body.get("decision", ""), body.get("note", ""))
+            if not rec:
+                return self._json(404, {"err": "no such application, or bad decision"})
+            return self._json(200, {"ok": True, "status": rec["status"], "mcname": rec["mcname"]})
         if self.path == "/api/chat":
             import re
             try:
@@ -247,6 +398,24 @@ def selftest():
         for i in range(700):
             chat_add("r", f"rot{i}", path=c)
         assert sum(1 for _ in open(c)) <= 600               # rotation kicked in
+    with tempfile.TemporaryDirectory() as d:
+        a = os.path.join(d, "apps.jsonl")
+        assert apply_add({"mcname": "x"}, path=a) is None          # reason required
+        assert apply_add({"why": "hi"}, path=a) is None            # name required
+        r1 = apply_add({"mcname": "notch", "why": "build things", "platform": "java"}, path=a)
+        r2 = apply_add({"mcname": "steve", "why": "mine things"}, path=a)
+        assert r1["status"] == "new" and r1["id"] != r2["id"] and r1["token"] != r2["token"]
+        assert apply_get(r1["id"], r1["token"], path=a)["mcname"] == "notch"
+        assert apply_get(r1["id"], "wrong-token", path=a) is None  # token is the key
+        assert apply_get("nope", r1["token"], path=a) is None
+        assert apply_decide(r1["id"], r1["token"], "sideways", path=a) is None
+        ok = apply_decide(r1["id"], r1["token"], "approve", note="seems fine", path=a)
+        assert ok["status"] == "approved" and ok["note"] == "seems fine"
+        assert apply_get(r1["id"], r1["token"], path=a)["status"] == "approved"
+        assert apply_get(r2["id"], r2["token"], path=a)["status"] == "new"  # untouched
+        assert len(apply_all(path=a)) == 2                          # rewrite kept both
+        assert "/apply/review/?id=" in apply_email_body(r1)
+        assert send_mail("x", "y") is False                         # no SMTP env -> no crash
     print("selftest ok")
 
 

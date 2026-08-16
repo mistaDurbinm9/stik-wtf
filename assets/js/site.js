@@ -314,6 +314,110 @@ document.addEventListener('click', function (e) {
   });
 })();
 
+// ---- whitelist application form ----
+(function () {
+  var form = document.getElementById('apply-form');
+  if (!form) return;
+  var status = document.getElementById('apply-status');
+  form.addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var val = function (id) { return (document.getElementById(id) || {}).value || ''; };
+    status.textContent = 'sending…';
+    fetch('/api/apply', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        mcname: val('ap-mcname'), platform: val('ap-platform'), discord: val('ap-discord'),
+        age: val('ap-age'), found: val('ap-found'), why: val('ap-why'),
+        experience: val('ap-exp'), website: val('ap-website')
+      })
+    })
+      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+      .then(function (res) {
+        if (res.ok && res.j.ok) {
+          form.hidden = true;
+          document.getElementById('apply-done').hidden = false;
+        } else {
+          status.textContent = res.j.err || 'that did not send.';
+        }
+      })
+      .catch(function () { status.textContent = 'that did not send — try again in a minute.'; });
+  });
+})();
+
+// ---- application review (opened from the emailed capability link) ----
+(function () {
+  var card = document.getElementById('rev-card');
+  if (!card) return;
+  var qs = new URLSearchParams(location.search);
+  var id = qs.get('id'), tok = qs.get('t');
+  var intro = document.getElementById('rev-intro');
+  var msg = document.getElementById('rev-status-msg');
+  if (!id || !tok) { intro.textContent = 'This page needs the link from the notification email.'; return; }
+
+  var LABELS = { platform: 'platform', discord: 'discord', age: 'age', found: 'found via',
+                 why: 'why they want in', experience: 'what they build' };
+
+  function paint(a) {
+    intro.hidden = true;
+    card.hidden = false;
+    document.getElementById('rev-name').textContent = a.mcname;
+    var badge = document.getElementById('rev-status');
+    badge.textContent = (a.status || 'new').toUpperCase();
+    badge.className = 'badge' + (a.status === 'approved' ? ' badge-live' : a.status === 'denied' ? ' badge-offline' : '');
+    var ul = document.getElementById('rev-fields');
+    ul.textContent = '';
+    Object.keys(LABELS).forEach(function (k) {
+      if (!a[k]) return;
+      var li = document.createElement('li');
+      var b = document.createElement('strong');
+      b.textContent = LABELS[k] + ': ';
+      var s = document.createElement('span');
+      s.textContent = a[k];           // untrusted input: textContent only
+      li.appendChild(b); li.appendChild(s); ul.appendChild(li);
+    });
+    var when = document.createElement('li');
+    when.className = 'update-date';
+    when.textContent = 'submitted ' + new Date(a.t * 1000).toLocaleString();
+    ul.appendChild(when);
+    if (a.status === 'approved') showCmd(a.mcname);
+    if (a.note) { msg.textContent = 'note: ' + a.note; }
+  }
+
+  function showCmd(name) {
+    document.getElementById('rev-cmd').textContent = 'whitelist add ' + name;
+    document.getElementById('rev-next').hidden = false;
+  }
+
+  function decide(decision) {
+    msg.textContent = 'saving…';
+    fetch('/api/apply/decide', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: id, t: tok, decision: decision, note: document.getElementById('rev-note').value })
+    })
+      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+      .then(function (res) {
+        if (!res.ok) { msg.textContent = res.j.err || 'that did not save.'; return; }
+        var badge = document.getElementById('rev-status');
+        badge.textContent = res.j.status.toUpperCase();
+        badge.className = 'badge' + (res.j.status === 'approved' ? ' badge-live' : ' badge-offline');
+        msg.textContent = 'saved.';
+        if (res.j.status === 'approved') showCmd(res.j.mcname);
+        else document.getElementById('rev-next').hidden = true;
+      })
+      .catch(function () { msg.textContent = 'that did not save.'; });
+  }
+
+  fetch('/api/apply/get?id=' + encodeURIComponent(id) + '&t=' + encodeURIComponent(tok))
+    .then(function (r) { if (!r.ok) throw 0; return r.json(); })
+    .then(paint)
+    .catch(function () { intro.textContent = 'That application could not be found — the link may be wrong or very old.'; });
+
+  document.getElementById('rev-approve').addEventListener('click', function () { decide('approve'); });
+  document.getElementById('rev-deny').addEventListener('click', function () { decide('deny'); });
+})();
+
 // ---- hit counter + uptime (lights up once the node endpoints exist) ----
 (function () {
   var hits = document.getElementById('hits');

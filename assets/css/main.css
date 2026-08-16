@@ -390,6 +390,35 @@ main a:not(.btn):not(.card):hover { background: var(--accent); color: var(--acce
 #chat-msg { flex: 1 1 200px; }
 .chat-status { font-family: var(--mono); font-size: 0.8rem; color: var(--muted); margin: 0.4rem 0 0; }
 
+/* whitelist application form + review */
+.apply-form select {
+  font-family: var(--font);
+  font-size: 1rem;
+  color: var(--ink);
+  background: var(--surface);
+  border: var(--border-w) solid var(--ink);
+  border-radius: var(--radius);
+  padding: 8px 10px;
+}
+.apply-form .req { font-family: var(--mono); font-size: 0.62rem; color: var(--accent); margin-left: 6px; }
+.apply-form .hint { font-family: var(--font); font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--muted); font-size: 0.75rem; }
+.rev-fields { list-style: none; padding: 0; margin: 0.8rem 0; }
+.rev-fields li { padding: 4px 0; border-top: 2px solid var(--ink); }
+.rev-fields li:first-child { border-top: none; }
+.rev-fields strong { font-family: var(--mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; }
+.rev-note-label { font-family: var(--mono); font-size: 0.72rem; font-weight: 700; text-transform: uppercase; display: block; margin-top: 1rem; }
+#rev-note {
+  width: 100%;
+  font-family: var(--font);
+  font-size: 0.95rem;
+  color: var(--ink);
+  background: var(--surface);
+  border: var(--border-w) solid var(--ink);
+  padding: 8px 10px;
+  margin-top: 4px;
+}
+.rev-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 1rem; }
+
 /* guestbook */
 .gb-form { display: flex; flex-direction: column; gap: 6px; max-width: 46ch; margin: 1.4rem 0 2rem; }
 .gb-form label { font-family: var(--mono); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }

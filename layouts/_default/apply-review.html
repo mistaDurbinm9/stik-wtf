@@ -1,0 +1,29 @@
+{{ define "main" }}
+<article class="page">
+  <h1>{{ .Title }}</h1>
+  <p id="rev-intro" class="chat-status">reading the application…</p>
+
+  <div id="rev-card" class="card" hidden>
+    <div class="card-top">
+      <h3 id="rev-name">—</h3>
+      <span class="badge" id="rev-status">NEW</span>
+    </div>
+    <ul class="rev-fields" id="rev-fields"></ul>
+
+    <label for="rev-note" class="rev-note-label">note to self (optional)</label>
+    <textarea id="rev-note" rows="2" maxlength="500" placeholder="why you decided what you decided"></textarea>
+
+    <p class="rev-actions">
+      <button class="btn" id="rev-approve" type="button">APPROVE →</button>
+      <button class="btn" id="rev-deny" type="button">DENY</button>
+    </p>
+    <p class="chat-status" id="rev-status-msg"></p>
+
+    <div id="rev-next" hidden>
+      <p><strong>Approved.</strong> Run this on the server to let them in:</p>
+      <pre class="snippet"><code id="rev-cmd"></code></pre>
+      <p><button class="btn copy-snip" type="button" data-copy-target="rev-cmd">COPY</button></p>
+    </div>
+  </div>
+</article>
+{{ end }}
