@@ -22,9 +22,27 @@ Also deployed to CT 905 (`/var/lib/gitea/custom/templates/`):
 
 Config in `/etc/gitea/app.ini` (backups: `app.ini.bak-<date>`, `app.ini.bak-brand`):
 `APP_NAME = stik.wtf code`, `[ui] DEFAULT_THEME = stik`. The `SHOW_FOOTER_*` keys are set
-but this build ignores them — hence the footer template. Custom logo + favicon live in
-`/var/lib/gitea/custom/public/assets/img/` (the mascot and the site favicon, from
-`static/`).
+but this build ignores them — hence the footer template. Custom images live in `/var/lib/gitea/custom/public/assets/img/`:
+`logo.svg` (the mascot, from `static/stik.svg`), `favicon.svg` (from `static/`), plus
+`favicon.png` + `apple-touch-icon.png` in this directory — Forgejo ships PNG versions too
+and iOS prefers them, so replacing only the SVG leaves its logo in the tab.
+
+## Access
+
+Self-registration is **off** (`[service] DISABLE_REGISTRATION = true`, backup
+`app.ini.bak-security`): the instance is invite-only in practice — accounts are created by
+the admin. Public repos stay readable anonymously (`REQUIRE_SIGNIN_VIEW = false`); private
+ones 404 for strangers. To add someone:
+
+```sh
+# on CT 905
+su git -s /bin/bash -c "/usr/local/bin/forgejo admin user create   --username NAME --email THEIR@EMAIL --random-password -c /etc/gitea/app.ini"
+```
+
+To switch to open-with-approval instead, set `DISABLE_REGISTRATION = false` and
+`REGISTER_MANUAL_CONFIRM = true` (needs a working mailer).
+
+`STATIC_CACHE_TIME = 2m` (was 6h) so theme edits show up promptly.
 
 ## Notes for whoever edits this next
 
