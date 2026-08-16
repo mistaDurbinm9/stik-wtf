@@ -321,3 +321,7 @@ h1, h2, h3,
 @media (prefers-reduced-motion: reduce) {
   .stik-forge-hero h1::after { animation: none; }
 }
+
+/* the software credit: present and honest, not shouting */
+.page-footer .stik-credit { color: var(--color-text-light-2); margin-left: 6px; }
+.page-footer .stik-credit a { color: inherit; text-decoration: underline; text-decoration-color: var(--color-primary); }
