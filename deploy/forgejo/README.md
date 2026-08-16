@@ -13,9 +13,18 @@ cat /tmp/base.css deploy/forgejo/stik-override.css > /tmp/theme-stik.css
 # then: systemctl restart forgejo
 ```
 
-Config: `[ui] DEFAULT_THEME = stik` in `/etc/gitea/app.ini` (backup: `app.ini.bak-<date>`).
-Custom logo + favicon live in `/var/lib/gitea/custom/public/assets/img/` (the mascot and
-the site favicon, copied from `static/`).
+Also deployed to CT 905 (`/var/lib/gitea/custom/templates/`):
+- `home.tmpl` → `templates/home.tmpl` — the signed-out landing page, replacing Forgejo's
+  marketing copy with the site's hero.
+- `footer_content.tmpl` → `templates/base/footer_content.tmpl` — replaces the
+  "Powered by Forgejo / version / render time" footer. **Note:** in this version that
+  template owns the `<footer>` wrapper itself, so the override must include it.
+
+Config in `/etc/gitea/app.ini` (backups: `app.ini.bak-<date>`, `app.ini.bak-brand`):
+`APP_NAME = stik.wtf code`, `[ui] DEFAULT_THEME = stik`. The `SHOW_FOOTER_*` keys are set
+but this build ignores them — hence the footer template. Custom logo + favicon live in
+`/var/lib/gitea/custom/public/assets/img/` (the mascot and the site favicon, from
+`static/`).
 
 ## Notes for whoever edits this next
 

@@ -270,3 +270,54 @@ h1, h2, h3,
 @media (prefers-reduced-motion: reduce) {
   .ui.ui.ui.button:hover, .ui.ui.ui.button:active { transform: none; }
 }
+
+/* ---- wordmark in the navbar, beside the mascot ---- */
+#navbar .navbar-left > a.item:first-child::after {
+  content: "stik.wtf";
+  font-weight: 900;
+  font-size: 1.05rem;
+  letter-spacing: -0.02em;
+  margin-left: 8px;
+  color: var(--color-text);
+}
+
+/* ---- the forge landing page, styled like the site's hero ---- */
+.stik-forge-hero {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 4rem 20px 2rem;
+}
+.stik-forge-hero h1 {
+  font-size: clamp(2.6rem, 8vw, 4rem);
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin: 0 0 1rem;
+}
+.stik-forge-hero h1::after {
+  content: "▮";
+  color: var(--color-primary);
+  margin-left: 0.15em;
+  animation: stikblink 1s steps(1) infinite;
+}
+@keyframes stikblink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+.stik-forge-hero p { font-size: 1.1rem; max-width: 52ch; }
+.stik-forge-hero a:not(.ui.button) {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: 3px;
+  text-decoration-color: var(--color-primary);
+  text-underline-offset: 2px;
+}
+.stik-forge-actions { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 1.6rem; }
+
+/* ---- footer: quiet, like the site's ---- */
+.page-footer {
+  border-top: 3px solid var(--color-light-border);
+  font-size: 0.85rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stik-forge-hero h1::after { animation: none; }
+}
