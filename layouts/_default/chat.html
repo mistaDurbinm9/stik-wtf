@@ -1,0 +1,23 @@
+{{ define "main" }}
+<article class="page">
+  {{ partial "page-sprite.html" . }}
+  <h1>{{ .Title }}</h1>
+  {{ .Content }}
+
+  <div class="card chat-box" id="chat-box">
+    <div class="card-top">
+      <h3>shoutbox</h3>
+      <span class="badge" id="chat-online">…</span>
+    </div>
+    <ul class="chat-msgs" id="chat-msgs"></ul>
+    <p id="chat-empty" hidden>Nothing yet today. Say the first thing.</p>
+    <form id="chat-form" autocomplete="off">
+      <input id="chat-name" name="name" type="text" maxlength="24" placeholder="anon">
+      <input id="chat-msg" name="msg" type="text" maxlength="300" required placeholder="say something (no links)">
+      <div class="gb-website"><label for="chat-website">website</label><input id="chat-website" name="website" type="text" tabindex="-1"></div>
+      <button class="btn" type="submit">SEND</button>
+    </form>
+    <p class="chat-status" id="chat-status" role="status"></p>
+  </div>
+</article>
+{{ end }}

@@ -349,6 +349,37 @@ main a:not(.btn):not(.card):hover { background: var(--accent); color: var(--acce
   .webring-icon { filter: invert(1); }
 }
 
+/* shoutbox */
+.chat-box { margin: 1.4rem 0; }
+.chat-box:hover { transform: none; box-shadow: var(--shadow-offset) var(--shadow-offset) 0 var(--shadow); }
+.chat-msgs {
+  list-style: none;
+  padding: 8px 0;
+  margin: 0.6rem 0;
+  max-height: 320px;
+  overflow-y: auto;
+  border-top: 2px solid var(--ink);
+  border-bottom: 2px solid var(--ink);
+  font-size: 0.9rem;
+}
+.chat-msgs li { padding: 3px 0; display: flex; gap: 8px; align-items: baseline; }
+.chat-time { font-family: var(--mono); font-size: 0.7rem; color: var(--muted); flex: 0 0 auto; }
+.chat-msgs strong { flex: 0 0 auto; }
+.chat-owner { color: var(--accent); }
+.chat-msgs li span:last-child { overflow-wrap: anywhere; }
+#chat-form { display: flex; gap: 8px; flex-wrap: wrap; }
+#chat-form input[type="text"] {
+  font-family: var(--font);
+  font-size: 0.95rem;
+  color: var(--ink);
+  background: var(--surface);
+  border: var(--border-w) solid var(--ink);
+  padding: 6px 10px;
+}
+#chat-name { width: 90px; }
+#chat-msg { flex: 1 1 200px; }
+.chat-status { font-family: var(--mono); font-size: 0.8rem; color: var(--muted); margin: 0.4rem 0 0; }
+
 /* guestbook */
 .gb-form { display: flex; flex-direction: column; gap: 6px; max-width: 46ch; margin: 1.4rem 0 2rem; }
 .gb-form label { font-family: var(--mono); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }

@@ -134,9 +134,10 @@ output + files-in-git is the boring, durable choice and makes the "tell Claude" 
    Python, self-tested) is the node-side helper: webhook rebuild + `/api/count` +
    `/api/uptime`; `deploy/Caddyfile` sketches the container's web server. Both get wired
    up with the author at deploy.
-9. Still later, author-gated: guestbook (serve.py grows an endpoint; needs a spam think),
-   joining a real webring (author picks the community), friends link-roll on the wall
-   (needs real links), per-page "for you" downloads if ever warranted.
+9. ~~Still later~~ mostly done by 2026-08-15: guestbook SHIPPED, webrings JOINED (Hotline
+   confirmed; XXIIVV pending), shoutbox SHIPPED at /chat (polling, presence counter,
+   honeypot + no-links rule + per-IP rate limits — the "tagboard, probably never" line
+   aged poorly). Remaining: friends link-roll grows as buttons arrive.
 10. Writing section — only if update entries start wanting to be essays.
 
 ## Standing rules (from CLAUDE.md, restated so this doc is self-contained)

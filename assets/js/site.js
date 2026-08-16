@@ -217,6 +217,81 @@ document.addEventListener('click', function (e) {
   });
 })();
 
+// ---- the shoutbox: poll while visible, 5s cadence ----
+(function () {
+  var box = document.getElementById('chat-box');
+  if (!box) return;
+  var list = document.getElementById('chat-msgs');
+  var online = document.getElementById('chat-online');
+  var empty = document.getElementById('chat-empty');
+  var status = document.getElementById('chat-status');
+  var nameInput = document.getElementById('chat-name');
+  var since = 0;
+  nameInput.value = localStorage.getItem('chat-name') || '';
+
+  function row(m) {
+    var li = document.createElement('li');
+    var time = document.createElement('span');
+    time.className = 'chat-time';
+    var d = new Date(m.t * 1000);
+    time.textContent = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+    var name = document.createElement('strong');
+    name.textContent = m.name; // untrusted: textContent only
+    if (m.name === 'stik') name.className = 'chat-owner';
+    var msg = document.createElement('span');
+    msg.textContent = m.msg;
+    li.appendChild(time);
+    li.appendChild(name);
+    li.appendChild(msg);
+    return li;
+  }
+
+  function poll() {
+    fetch('/api/chat?since=' + since)
+      .then(function (r) { if (!r.ok) throw 0; return r.json(); })
+      .then(function (j) {
+        online.textContent = j.online + ' HERE';
+        (j.msgs || []).forEach(function (m) {
+          list.appendChild(row(m));
+          since = Math.max(since, m.t);
+        });
+        while (list.children.length > 100) list.removeChild(list.firstChild);
+        empty.hidden = list.children.length > 0;
+        list.scrollTop = list.scrollHeight;
+      })
+      .catch(function () { online.textContent = 'OFFLINE'; });
+  }
+
+  poll();
+  setInterval(function () { if (!document.hidden) poll(); }, 5000);
+
+  document.getElementById('chat-form').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var msgInput = document.getElementById('chat-msg');
+    try { localStorage.setItem('chat-name', nameInput.value); } catch (e) {}
+    fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: nameInput.value,
+        msg: msgInput.value,
+        website: document.getElementById('chat-website').value
+      })
+    })
+      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+      .then(function (res) {
+        if (res.ok && res.j.msg) {
+          msgInput.value = '';
+          status.textContent = '';
+          poll();
+        } else {
+          status.textContent = res.j.err || 'that did not work.';
+        }
+      })
+      .catch(function () { status.textContent = 'that did not work.'; });
+  });
+})();
+
 // ---- hit counter + uptime (lights up once the node endpoints exist) ----
 (function () {
   var hits = document.getElementById('hits');
