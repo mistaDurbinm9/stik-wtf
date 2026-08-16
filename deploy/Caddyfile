@@ -17,6 +17,13 @@ http://www.stik.wtf {
 		-Server
 	}
 
+	# HTML always revalidates (cheap 304s via ETag) so nav changes appear instantly;
+	# fingerprinted css/js can cache long; other assets get an hour.
+	@assets path *.css *.js *.svg *.png *.ico
+	header @assets Cache-Control "public, max-age=3600"
+	@pages not path *.css *.js *.svg *.png *.ico
+	header @pages Cache-Control "no-cache"
+
 	handle /hook {
 		reverse_proxy 127.0.0.1:8787
 	}
