@@ -34,6 +34,9 @@ not limited to those. The site is the author's public surface.
   migrated 2026-08-14). DNS-only/grey forever; never touched by this project.
 - `ai.stik.wtf` → planned: the author's self-hosted AI workspace (their main software project,
   a separate repo), interim access behind Cloudflare Access, invite-only.
+- `git.stik.wtf` → the author's Forgejo forge (CT 905), public read, SSH git access LAN-only;
+  mirrors repos out to GitHub. Its stik.wtf skin lives in `deploy/forgejo/` — see that README.
+  Its tunnel ingress shares CT 902's `/etc/cloudflared/config.yml` with this site.
 - The author also runs `neoaquatics.com` (a storefront, its own project/tenant).
 
 **The server (Proxmox node)** already hosts: an AI-inference container (CPU llama serving for

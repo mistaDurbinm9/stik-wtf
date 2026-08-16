@@ -176,6 +176,12 @@ the motion mechanics, mono-for-metadata, weight-900 headings, the dark-mode swap
   blue bg, emerald accent family, all-mono, zero-radius `.EXE` window chrome. Same bones
   (mono metadata, uppercase labels, hard edges, one accent hue), own creature. Outis picks
   its own when its turn comes.
+- **Skinning someone else's app** (git.stik.wtf runs Forgejo; see `deploy/forgejo/`): keep
+  the same accent and palette, but expect to relax density rules — there, borders drop to
+  2px and hard shadows are reserved for buttons, because stacked panels can't carry a
+  shadow without splitting one visual box in two. Append to the app's stock theme rather
+  than replacing it, so unknown variables keep working. The identity survives on palette +
+  squared edges + mono metadata + the button press alone.
 - Background temperature (`--bg`/`--surface` tint) — warm paper here; a storefront might
   run cooler.
 - Density: a storefront needs tighter cards and product grids — keep the box, shrink the

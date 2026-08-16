@@ -12,6 +12,10 @@ container, published through Cloudflare Tunnel with **zero open inbound ports**.
 
 - **Minecraft server** — Fabric + Geyser, 16GB heap in a 32GB-cap container
 - **AI inference** — CPU llama serving for the [AI workspace](/projects/ai-workspace/)
+- **[git.stik.wtf](https://git.stik.wtf)** — my own Forgejo forge, skinned to match this
+  site, mirroring out to GitHub
+- **[Neoaquatics](/projects/neoaquatics/)** — the storefront, its own tenant
+- **AdGuard** — DNS filtering for the whole house
 - **This site** — Hugo, rebuilt on every push
 
 The node itself:

@@ -1,0 +1,272 @@
+
+/* ==========================================================================
+   stik.wtf theme for Forgejo — appended to the stock forgejo-auto theme.
+   Palette + structure per DESIGN.md (github.com/mistaDurbinm9/stik-wtf).
+
+   Two deliberate departures from the website, both because a git forge is a
+   dense application, not a page:
+     - borders are 2px, not 3px
+     - hard shadows live on buttons only; boxes get ink borders instead.
+       (Stacked "attached" panels can't carry shadows without drawing a line
+       through the middle of a single visual box.)
+   Specificity: Fomantic's own `.ui.ui` doubling is used to outrank base
+   rules rather than scattering !important.
+   ========================================================================== */
+
+:root {
+  /* the one accent */
+  --color-primary: #B026FF;
+  --color-primary-contrast: #ffffff;
+  --color-primary-hover: #a11ee8;
+  --color-primary-active: #921bd1;
+  --color-primary-dark-1: #a11ee8;
+  --color-primary-dark-2: #921bd1;
+  --color-primary-dark-3: #8318ba;
+  --color-primary-dark-4: #7415a3;
+  --color-primary-dark-5: #65128c;
+  --color-primary-dark-6: #560f75;
+  --color-primary-dark-7: #470c5e;
+  --color-primary-light-1: #ba3cff;
+  --color-primary-light-2: #c455ff;
+  --color-primary-light-3: #ce6eff;
+  --color-primary-light-4: #d887ff;
+  --color-primary-light-5: #e2a0ff;
+  --color-primary-light-6: #ecb9ff;
+  --color-primary-light-7: #f6d2ff;
+  --color-primary-alpha-10: rgba(176, 38, 255, 0.1);
+  --color-primary-alpha-20: rgba(176, 38, 255, 0.2);
+  --color-primary-alpha-30: rgba(176, 38, 255, 0.3);
+  --color-primary-alpha-40: rgba(176, 38, 255, 0.4);
+  --color-primary-alpha-50: rgba(176, 38, 255, 0.5);
+  --color-primary-alpha-60: rgba(176, 38, 255, 0.6);
+  --color-primary-alpha-70: rgba(176, 38, 255, 0.7);
+  --color-primary-alpha-80: rgba(176, 38, 255, 0.8);
+  --color-primary-alpha-90: rgba(176, 38, 255, 0.9);
+  --color-accent: #B026FF;
+  --color-small-accent: rgba(176, 38, 255, 0.15);
+
+  /* paper + ink */
+  --color-body: #f5f2ea;
+  --color-box-body: #ffffff;
+  --color-box-body-highlight: #faf8f3;
+  --color-box-header: #f5f2ea;
+  --color-text: #14120f;
+  --color-text-dark: #000000;
+  --color-text-light: #3d3a34;
+  --color-text-light-1: #5f5a52;
+  --color-text-light-2: #6f6a61;
+  --color-text-light-3: #8a857b;
+  --color-placeholder-text: #8a857b;
+  --color-menu: #ffffff;
+  --color-button: #ffffff;
+  --color-header-wrapper: #f5f2ea;
+  --color-header-wrapper-transparent: rgba(245, 242, 234, 0.85);
+  --color-nav-bg: #f5f2ea;
+  --color-nav-hover-bg: rgba(176, 38, 255, 0.12);
+  --color-secondary-nav-bg: #ffffff;
+  --color-hover: rgba(176, 38, 255, 0.08);
+  --color-active: rgba(176, 38, 255, 0.14);
+  --color-input-background: #ffffff;
+  --color-input-text: #14120f;
+  --color-input-border: #14120f;
+  --color-input-border-hover: #B026FF;
+  --color-light-border: #14120f;
+  --color-shadow: #14120f;
+  --color-markup-code-block: #efebe1;
+
+  /* kill the stock blue-greys: subtle surfaces stay warm, not steel */
+  --color-secondary: #e5e0d5;
+  --color-secondary-bg: #efebe1;
+  --color-secondary-hover: #dcd6c8;
+  --color-secondary-active: #d3ccbb;
+  --color-secondary-light-1: #eae6dc;
+  --color-secondary-light-2: #efebe3;
+  --color-secondary-light-3: #f4f1eb;
+  --color-secondary-light-4: #f8f6f2;
+  --color-secondary-dark-1: #d8d2c5;
+  --color-secondary-dark-2: #cbc4b4;
+  --color-secondary-dark-3: #bdb5a3;
+  --color-secondary-dark-4: #afa692;
+  --color-console-border: #14120f;
+
+  /* honest edges */
+  --border-radius: 2px;
+  --border-radius-medium: 2px;
+  --border-radius-large: 3px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-body: #131217;
+    --color-box-body: #1d1b23;
+    --color-box-body-highlight: #24222c;
+    --color-box-header: #1a1820;
+    --color-text: #f2efe6;
+    --color-text-dark: #ffffff;
+    --color-text-light: #cfcbc2;
+    --color-text-light-1: #a5a1ae;
+    --color-text-light-2: #948fa0;
+    --color-text-light-3: #7d7889;
+    --color-placeholder-text: #7d7889;
+    --color-menu: #1d1b23;
+    --color-button: #1d1b23;
+    --color-header-wrapper: #131217;
+    --color-header-wrapper-transparent: rgba(19, 18, 23, 0.85);
+    --color-nav-bg: #131217;
+    --color-secondary-nav-bg: #1d1b23;
+    --color-input-background: #1d1b23;
+    --color-input-text: #f2efe6;
+    --color-input-border: #f2efe6;
+    --color-light-border: #f2efe6;
+    --color-shadow: #B026FF;          /* dark mode: shadows glow accent */
+    --color-markup-code-block: #1a1820;
+
+    --color-secondary: #2a2833;
+    --color-secondary-bg: #24222c;
+    --color-secondary-hover: #332f3e;
+    --color-secondary-active: #3b3747;
+    --color-secondary-light-1: #332f3e;
+    --color-secondary-light-2: #3b3747;
+    --color-secondary-light-3: #443f52;
+    --color-secondary-light-4: #4d475c;
+    --color-secondary-dark-1: #24222c;
+    --color-secondary-dark-2: #1f1d26;
+    --color-secondary-dark-3: #1a1820;
+    --color-secondary-dark-4: #16141b;
+    --color-console-border: #f2efe6;
+  }
+}
+
+/* ---- boxes: ink borders, squared. attached stacks read as ONE box ---- */
+.ui.ui.segment,
+.ui.ui.attached.segment,
+.ui.ui.attached.header,
+.ui.ui.card,
+.ui.ui.table,
+.file-header,
+.non-diff-file-content,
+.repository .ui.ui.segment {
+  border: 2px solid var(--color-light-border);
+  border-radius: 2px;
+  box-shadow: none;
+}
+/* merge the stack: header keeps its top corners, body keeps its bottom ones */
+.ui.ui.attached.header:not(:last-child),
+.file-header:not(:last-child) {
+  border-bottom-width: 2px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.ui.ui.attached.segment:not(:first-child),
+.non-diff-file-content:not(:first-child) {
+  border-top: none;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+/* rows inside lists stay quiet — only the list's outer edge is a box */
+.flex-list .flex-item {
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* ---- buttons: the one place the hard shadow lives ---- */
+.ui.ui.ui.button {
+  border: 2px solid var(--color-light-border);
+  border-radius: 2px;
+  box-shadow: 3px 3px 0 var(--color-shadow) !important;
+  font-weight: 700;
+  transition: none;
+}
+.ui.ui.ui.button:hover {
+  transform: translate(1px, 1px);
+  box-shadow: 2px 2px 0 var(--color-shadow) !important;
+}
+.ui.ui.ui.button:active {
+  transform: translate(3px, 3px);
+  box-shadow: none !important;
+}
+.ui.ui.ui.primary.button {
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
+  border-color: var(--color-light-border);
+}
+/* dense chrome keeps calm: tiny/inline/grouped controls stay flat */
+.ui.ui.ui.ui.button.mini,
+.ui.ui.ui.compact.button,
+.ui.ui.ui.tiny.button,
+.ui.ui.ui.basic.button,
+.ui.buttons .ui.ui.ui.button,
+.ui.ui.ui.icon.button:not(.primary) {
+  box-shadow: none !important;
+}
+.ui.ui.ui.ui.button.mini:hover,
+.ui.ui.ui.compact.button:hover,
+.ui.ui.ui.tiny.button:hover,
+.ui.ui.ui.basic.button:hover,
+.ui.buttons .ui.ui.ui.button:hover,
+.ui.ui.ui.icon.button:not(.primary):hover {
+  transform: none;
+  box-shadow: none !important;
+  border-color: var(--color-primary);
+}
+
+/* ---- header: paper with an ink rule under it ---- */
+#navbar,
+.page-header,
+nav.navbar {
+  border-bottom: 3px solid var(--color-light-border);
+  box-shadow: none;
+}
+#navbar .item:hover { background: var(--color-nav-hover-bg); }
+
+/* ---- type: headings loud, metadata mono ---- */
+h1, h2, h3,
+.ui.ui.header,
+.flex-item-title {
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+.repo-title, .repository .header-wrapper h1 { font-weight: 900; }
+.commit-id, .sha, .shortsha, time, .time-since, .file-info, .repo-path {
+  font-family: var(--fonts-monospace);
+}
+
+/* ---- inputs: honest boxes ---- */
+.ui.ui.input > input,
+.ui.ui.form input[type="text"],
+.ui.ui.form input[type="password"],
+.ui.ui.form input[type="email"],
+.ui.ui.form textarea,
+.ui.ui.selection.dropdown,
+.ui.ui.search > .ui.input > input {
+  border: 2px solid var(--color-input-border);
+  border-radius: 2px;
+}
+.ui.ui.input > input:focus,
+.ui.ui.form input:focus,
+.ui.ui.form textarea:focus {
+  border-color: var(--color-primary);
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+/* ---- labels: the site's badge language ---- */
+.ui.ui.label {
+  border-radius: 2px;
+  font-family: var(--fonts-monospace);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+}
+
+/* ---- prose links get the marker underline ---- */
+.markup a:not(.btn):not(.ui.button),
+.repo-description a {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-decoration-color: var(--color-primary);
+  text-underline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui.ui.ui.button:hover, .ui.ui.ui.button:active { transform: none; }
+}
