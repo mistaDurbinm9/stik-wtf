@@ -79,3 +79,34 @@ curl -s https://stik.wtf/api/uptime          # {"days":0}
 
 Then push a trivial commit → site updates itself within seconds. Check /wall/, /404 page,
 the Minecraft page's live status, and one page on a phone.
+
+## Whitelist applications (added 2026-08-16)
+
+`/apply` on the site posts to `serve.py`, which stores each application in
+`/var/lib/stik/applications.jsonl` and emails a review link to
+`/apply/review/?id=…&t=…`. That link is a capability: the token is the only key, so
+anyone holding the link can approve or deny — treat the notification email as private.
+Approving shows the `whitelist add <name>` command to run on the Minecraft container.
+
+**Turning on email.** Everything works without it (applications queue silently), but to
+get notified, put a Gmail app password — NOT the account password — into the env file:
+
+```sh
+# on CT 902, as root
+nano /etc/stik-helper.env      # fill in SMTP_PASS=<16-char app password>
+systemctl restart stik-helper
+```
+
+Get the app password at myaccount.google.com/apppasswords (2FA required). The file is
+0600 and read by systemd via `EnvironmentFile=-`. Test with:
+
+```sh
+curl -s -X POST https://stik.wtf/api/apply -H 'Content-Type: application/json' \
+  --data-binary '{"mcname":"TestName","why":"checking email"}'
+journalctl -u stik-helper -n 5     # shows: application <id> from TestName (mailed=True)
+```
+
+**Auto-whitelisting** is deliberately not wired up: the Minecraft server has
+`enable-rcon=false`, and turning RCON on requires restarting the server (kicking whoever
+is online). If wanted later, enable RCON in `server.properties`, then have serve.py send
+`whitelist add` over RCON on approval.

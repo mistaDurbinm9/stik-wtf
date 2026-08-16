@@ -191,7 +191,7 @@ def send_mail(subject, body):
     from email.message import EmailMessage
     msg = EmailMessage()
     msg["Subject"] = subject
-    msg["From"] = user
+    msg["From"] = os.environ.get("SMTP_FROM", user)   # e.g. tyler@stik.wtf via a Gmail alias
     msg["To"] = to
     msg.set_content(body)
     try:
