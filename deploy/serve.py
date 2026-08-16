@@ -150,7 +150,8 @@ class Handler(BaseHTTPRequestHandler):
                 except ValueError:
                     pass
             now = time.time()
-            CHAT_SEEN[self._client_ip()] = now
+            if "since=" in self.path:  # only chat-page pollers count as present
+                CHAT_SEEN[self._client_ip()] = now
             online = sum(1 for t in CHAT_SEEN.values() if now - t < 60)
             self._json(200, {"msgs": chat_list(since), "online": online})
         else:

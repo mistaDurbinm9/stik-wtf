@@ -18,4 +18,15 @@
   {{ partial "updates-list.html" (dict "updates" (first 5 (where site.RegularPages "Type" "updates")) "showProject" true) }}
   <p><a class="btn" href="/now/">everything I'm doing →</a></p>
 </section>
+
+<section>
+  <h2>Chat</h2>
+  <a class="card chat-teaser" href="/chat/" id="chat-teaser">
+    <div class="card-top">
+      <h3>the shoutbox</h3>
+      <span class="badge" id="teaser-online">LIVE</span>
+    </div>
+    <p id="teaser-line">no account, no history — just say something.</p>
+  </a>
+</section>
 {{ end }}

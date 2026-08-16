@@ -349,6 +349,10 @@ main a:not(.btn):not(.card):hover { background: var(--accent); color: var(--acce
   .webring-icon { filter: invert(1); }
 }
 
+/* home chat teaser */
+.chat-teaser { margin: 1.2rem 0; }
+.chat-teaser p { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
 /* shoutbox */
 .chat-box { margin: 1.4rem 0; }
 .chat-box:hover { transform: none; box-shadow: var(--shadow-offset) var(--shadow-offset) 0 var(--shadow); }

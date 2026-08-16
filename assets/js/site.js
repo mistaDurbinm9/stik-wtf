@@ -217,6 +217,28 @@ document.addEventListener('click', function (e) {
   });
 })();
 
+// ---- home-page chat teaser: one fetch, no polling, doesn't count as presence ----
+(function () {
+  var teaser = document.getElementById('chat-teaser');
+  if (!teaser) return;
+  fetch('/api/chat')
+    .then(function (r) { if (!r.ok) throw 0; return r.json(); })
+    .then(function (j) {
+      var badge = document.getElementById('teaser-online');
+      if (j.online > 0) {
+        badge.textContent = j.online + ' HERE NOW';
+        badge.className = 'badge badge-live';
+      }
+      var msgs = j.msgs || [];
+      if (msgs.length) {
+        var last = msgs[msgs.length - 1];
+        var line = document.getElementById('teaser-line');
+        line.textContent = last.name + ': ' + (last.msg.length > 70 ? last.msg.slice(0, 70) + '…' : last.msg);
+      }
+    })
+    .catch(function () {});
+})();
+
 // ---- the shoutbox: poll while visible, 5s cadence ----
 (function () {
   var box = document.getElementById('chat-box');
