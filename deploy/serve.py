@@ -226,55 +226,16 @@ def apply_email_body(rec):
     return "\n".join(lines)
 
 
-# ---- minecraft RCON: enough of the protocol to run one command ----
-# Source RCON is tiny: little-endian length, request id, type, body, two nulls.
-# type 3 = login, 2 = command, and a login failure comes back as id -1.
-def rcon(command, host=None, port=None, password=None, timeout=6):
-    import socket
-    import struct
-    host = host or os.environ.get("RCON_HOST", "192.168.1.68")
-    port = int(port or os.environ.get("RCON_PORT", "25575"))
-    password = password or os.environ.get("RCON_PASS", "")
-    if not password:
-        return (False, "RCON_PASS not set")
-
-    def pack(req_id, req_type, body):
-        payload = struct.pack("<ii", req_id, req_type) + body.encode("utf8") + b"\x00\x00"
-        return struct.pack("<i", len(payload)) + payload
-
-    def read(sock):
-        raw = sock.recv(4)
-        if len(raw) < 4:
-            return (None, "")
-        size = struct.unpack("<i", raw)[0]
-        data = b""
-        while len(data) < size:
-            chunk = sock.recv(size - len(data))
-            if not chunk:
-                break
-            data += chunk
-        rid, _rtype = struct.unpack("<ii", data[:8])
-        return (rid, data[8:-2].decode("utf8", "replace"))
-
-    try:
-        with socket.create_connection((host, port), timeout=timeout) as s:
-            s.settimeout(timeout)
-            s.sendall(pack(1, 3, password))
-            rid, _ = read(s)
-            if rid == -1 or rid is None:
-                return (False, "rcon auth rejected")
-            s.sendall(pack(2, 2, command))
-            _rid, body = read(s)
-            return (True, body.strip())
-    except OSError as e:
-        return (False, "rcon unreachable: %s" % e)
+# ---- whitelist queue ----
+# The game server is firewalled off from the LAN on purpose, so the web container never
+# talks to it. Instead CT 901 pulls this list over the internet and whitelists itself
+# locally: the worst a compromise of this box can do is get somebody whitelisted.
+MCNAME_RE = re.compile(r"[A-Za-z0-9_]{2,16}$")
 
 
-def whitelist_add(name):
-    """Whitelist a player. Returns (ok, what the server said)."""
-    if not re.fullmatch(r"[A-Za-z0-9_ .]{2,32}", name or ""):
-        return (False, "that name doesn't look like a minecraft name")
-    return rcon("whitelist add %s" % name)
+def whitelist_queue(path=None):
+    return sorted({r["mcname"] for r in apply_all(path)
+                   if r.get("status") == "approved" and MCNAME_RE.match(r.get("mcname", ""))})
 
 
 # ---- the ask box: a small model, answering only from this site's own pages ----
@@ -743,6 +704,13 @@ class Handler(BaseHTTPRequestHandler):
             payload = canvas_payload()
             payload["wait"] = max(0, int(CANVAS_COOLDOWN - (time.time() - CANVAS_LAST.get(self._client_ip(), 0))))
             return self._json(200, payload)
+        if self.path.startswith("/api/whitelist-queue"):
+            from urllib.parse import parse_qs, urlparse
+            token = os.environ.get("ADMIN_TOKEN", "")
+            given = (parse_qs(urlparse(self.path).query).get("t") or [""])[0]
+            if not (token and secrets.compare_digest(given, token)):
+                return self._json(403, {"err": "needs the admin token"})
+            return self._json(200, {"names": whitelist_queue()})
         if self.path.startswith("/api/asked"):
             from urllib.parse import parse_qs, urlparse
             token = os.environ.get("ADMIN_TOKEN", "")
@@ -868,13 +836,9 @@ class Handler(BaseHTTPRequestHandler):
                                body.get("decision", ""), body.get("note", ""))
             if not rec:
                 return self._json(404, {"err": "no such application, or bad decision"})
-            out = {"ok": True, "status": rec["status"], "mcname": rec["mcname"]}
-            if rec["status"] == "approved":          # actually let them in
-                ok, said = whitelist_add(rec["mcname"])
-                out["whitelisted"] = ok
-                out["server_said"] = said
-                print("whitelist %s: %s (%s)" % (rec["mcname"], ok, said), flush=True)
-            return self._json(200, out)
+            return self._json(200, {"ok": True, "status": rec["status"],
+                                    "mcname": rec["mcname"],
+                                    "queued": rec["status"] == "approved"})
         if self.path == "/api/chat":
             import re
             try:
@@ -1003,9 +967,6 @@ def selftest():
         stale = power_report(path=p, now=gap + 600)                  # 10 min of silence
         assert stale["sources"] == {} and stale["watts"] == 0        # powered off, honestly
         assert abs(stale["kwh"] - 0.1) < 1e-6                        # energy total survives
-    assert whitelist_add("bad;name")[0] is False           # no command injection
-    assert whitelist_add("")[0] is False
-    assert whitelist_add("x" * 40)[0] is False
     ring = [{"slug": "a", "url": "https://a.example"},
             {"slug": "b", "url": "https://b.example"},
             {"slug": "c", "url": "https://c.example"}]
@@ -1021,6 +982,17 @@ def selftest():
     assert ring_hop("a", "next", solo) == "https://a.example"        # a ring of one
     assert ring_hop("a", "random", solo) == "https://a.example"      # ...doesn't hang
     assert isinstance(ring_members(path="/nonexistent/ring.json"), list)
+    with tempfile.TemporaryDirectory() as d:
+        aq = os.path.join(d, "apps.jsonl")
+        apply_add({"mcname": "GoodName_1", "why": "x"}, path=aq)
+        r = apply_add({"mcname": "vale79", "why": "y"}, path=aq)
+        apply_add({"mcname": "bad;name", "why": "z"}, path=aq)
+        assert whitelist_queue(aq) == []                       # nothing approved yet
+        apply_decide(r["id"], r["token"], "approve", path=aq)
+        assert whitelist_queue(aq) == ["vale79"]               # only the approved one
+        bad = apply_all(aq)[2]
+        apply_decide(bad["id"], bad["token"], "approve", path=aq)
+        assert whitelist_queue(aq) == ["vale79"]               # malformed name never ships
     with tempfile.TemporaryDirectory() as d:
         ak = os.path.join(d, "asked.jsonl")
         assert asked_list(path=ak) == []
