@@ -1,0 +1,23 @@
+{{ define "main" }}
+<article class="page">
+  {{ partial "page-sprite.html" . }}
+  <h1>{{ .Title }}</h1>
+  {{ .Content }}
+
+  <h2>services</h2>
+  <div class="cards" id="svc-cards">
+    <p class="chat-status" id="svc-loading">checking the box…</p>
+  </div>
+
+  <h2>visits</h2>
+  <div class="card sparkline-card">
+    <div class="card-top"><h3>daily</h3><span class="badge" id="hits-total">—</span></div>
+    <div id="hits-chart" class="sparkline"></div>
+    <p class="chat-status" id="hits-note">counting starts the day this went up.</p>
+  </div>
+
+  <h2>what changed</h2>
+  <ul class="updates" id="changes"></ul>
+  <p class="chat-status">straight from the site's git log — <a href="https://git.stik.wtf/stik/stik-wtf">the repo</a>.</p>
+</article>
+{{ end }}

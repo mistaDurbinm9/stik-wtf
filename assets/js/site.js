@@ -314,6 +314,93 @@ document.addEventListener('click', function (e) {
   });
 })();
 
+// ---- status page: services, visits sparkline, git log ----
+(function () {
+  var wrap = document.getElementById('svc-cards');
+  if (!wrap) return;
+
+  function sparkline(series) {
+    var host = document.getElementById('hits-chart');
+    host.textContent = '';
+    if (!series.length) { host.textContent = ''; return; }
+    var vals = series.map(function (s) { return s.visits; });
+    var max = Math.max.apply(null, vals) || 1;
+    var w = 600, h = 90, gap = 2;
+    var bw = Math.max(3, Math.floor(w / series.length) - gap);
+    var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
+    svg.setAttribute('role', 'img');
+    svg.setAttribute('aria-label', 'daily visits, ' + series.length + ' days');
+    series.forEach(function (s, i) {
+      var bh = Math.max(2, Math.round(s.visits / max * (h - 16)));
+      var r = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      r.setAttribute('x', i * (bw + gap));
+      r.setAttribute('y', h - bh);
+      r.setAttribute('width', bw);
+      r.setAttribute('height', bh);
+      r.setAttribute('fill', 'var(--accent)');
+      var t = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+      t.textContent = s.day + ': ' + s.visits + ' visits';
+      r.appendChild(t);
+      svg.appendChild(r);
+    });
+    host.appendChild(svg);
+  }
+
+  fetch('/api/status')
+    .then(function (r) { if (!r.ok) throw 0; return r.json(); })
+    .then(function (j) {
+      var loading = document.getElementById('svc-loading');
+      if (loading) loading.remove();
+      (j.services || []).forEach(function (s) {
+        var a = document.createElement('a');
+        a.className = 'card';
+        a.href = s.url;
+        var top = document.createElement('div');
+        top.className = 'card-top';
+        var h3 = document.createElement('h3');
+        h3.textContent = s.name;
+        var b = document.createElement('span');
+        b.className = 'badge ' + (s.up ? 'badge-live' : 'badge-offline');
+        b.textContent = s.up ? 'UP' : 'DOWN';
+        top.appendChild(h3); top.appendChild(b);
+        a.appendChild(top);
+        wrap.appendChild(a);
+      });
+
+      var series = j.hits || [];
+      sparkline(series);
+      var total = series.reduce(function (n, s) { return n + s.visits; }, 0);
+      document.getElementById('hits-total').textContent = total + ' TOTAL';
+      if (series.length < 2) document.getElementById('hits-note').textContent =
+        'one day of data so far — the shape shows up after a few days.';
+      else document.getElementById('hits-note').textContent = series.length + ' days recorded.';
+
+      var ul = document.getElementById('changes');
+      (j.changes || []).forEach(function (c) {
+        var li = document.createElement('li');
+        li.className = 'update';
+        var d = document.createElement('span');
+        d.className = 'update-date';
+        d.textContent = c.date;
+        var body = document.createElement('div');
+        body.className = 'update-body';
+        var s = document.createElement('strong');
+        s.textContent = c.subject;
+        var sha = document.createElement('div');
+        sha.className = 'update-text';
+        sha.textContent = c.sha;
+        body.appendChild(s); body.appendChild(sha);
+        li.appendChild(d); li.appendChild(body);
+        ul.appendChild(li);
+      });
+    })
+    .catch(function () {
+      var loading = document.getElementById('svc-loading');
+      if (loading) loading.textContent = 'the status endpoint is unreachable.';
+    });
+})();
+
 // ---- the shared pixel canvas ----
 (function () {
   var cv = document.getElementById('cv');

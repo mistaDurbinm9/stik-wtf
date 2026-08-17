@@ -359,6 +359,11 @@ main a:not(.btn):not(.card):hover { background: var(--accent); color: var(--acce
   .webring-icon { filter: invert(1); }
 }
 
+/* status page */
+.sparkline-card:hover { transform: none; box-shadow: var(--shadow-offset) var(--shadow-offset) 0 var(--shadow); }
+.sparkline { margin: 0.8rem 0; }
+.sparkline svg { width: 100%; height: auto; display: block; }
+
 /* the shared canvas */
 .canvas-card:hover { transform: none; box-shadow: var(--shadow-offset) var(--shadow-offset) 0 var(--shadow); }
 .canvas-wrap { margin: 1rem 0; display: flex; justify-content: center; }

@@ -225,6 +225,107 @@ def apply_email_body(rec):
     return "\n".join(lines)
 
 
+# ---- service status ----
+# Checked on the LAN, not through the tunnel: this answers "is the service up?", not
+# "is Cloudflare up?". Cached so a popular page can't turn into a port-scan.
+SERVICES = [
+    {"key": "minecraft", "name": "minecraft", "host": "192.168.1.68", "port": 25660,
+     "url": "/projects/minecraft-server/"},
+    {"key": "forge", "name": "git forge", "host": "192.168.1.61", "port": 3000,
+     "url": "https://git.stik.wtf"},
+    {"key": "store", "name": "neoaquatics", "host": "192.168.1.70", "port": 3000,
+     "url": "https://neoaquatics.com"},
+    {"key": "site", "name": "this site", "host": "127.0.0.1", "port": 80, "url": "/"},
+]
+STATUS_CACHE = {"t": 0.0, "data": []}
+STATUS_TTL = 60
+
+
+def probe(host, port, timeout=1.5):
+    import socket
+    try:
+        with socket.create_connection((host, port), timeout=timeout):
+            return True
+    except OSError:
+        return False
+
+
+def services_status(now=None):
+    now = now if now is not None else time.time()
+    if now - STATUS_CACHE["t"] < STATUS_TTL and STATUS_CACHE["data"]:
+        return STATUS_CACHE["data"]
+    out = [{"key": s["key"], "name": s["name"], "url": s["url"],
+            "up": probe(s["host"], s["port"])} for s in SERVICES]
+    STATUS_CACHE.update(t=now, data=out)
+    return out
+
+
+# ---- what changed: the site's own git log ----
+CHANGES_CACHE = {"t": 0.0, "data": []}
+
+
+def recent_changes(limit=12, now=None):
+    now = now if now is not None else time.time()
+    if now - CHANGES_CACHE["t"] < 300 and CHANGES_CACHE["data"]:
+        return CHANGES_CACHE["data"]
+    try:
+        out = subprocess.run(
+            ["git", "log", "-n", str(limit), "--no-merges", "--date=short",
+             "--pretty=format:%h\x1f%ad\x1f%s"],
+            cwd=SITE_DIR, capture_output=True, text=True, timeout=10, check=True).stdout
+        rows = []
+        for line in out.splitlines():
+            bits = line.split("\x1f")
+            if len(bits) == 3:
+                rows.append({"sha": bits[0], "date": bits[1], "subject": bits[2][:120]})
+        CHANGES_CACHE.update(t=now, data=rows)
+        return rows
+    except (subprocess.SubprocessError, OSError):
+        return CHANGES_CACHE["data"]
+
+
+# ---- traffic history: one bucket per day, written as the counter ticks ----
+HITS_HIST = os.environ.get("HITS_HIST", "/var/lib/stik/hits-history.json")
+
+
+def hits_record(total, path=None, now=None):
+    """Remember the running total per day so we can show a daily-visits sparkline."""
+    path = path or HITS_HIST
+    now = now if now is not None else time.time()
+    day = time.strftime("%Y-%m-%d", time.gmtime(now))
+    with LOCK:
+        try:
+            with open(path, encoding="utf-8") as f:
+                hist = json.load(f)
+        except (FileNotFoundError, ValueError):
+            hist = {}
+        hist[day] = total                       # last total seen that day
+        for old in sorted(hist)[:-120]:         # keep ~4 months
+            hist.pop(old, None)
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        tmp = path + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump(hist, f)
+        os.replace(tmp, path)
+    return hist
+
+
+def hits_series(path=None):
+    """Per-day visit counts, derived from the running totals."""
+    try:
+        with open(path or HITS_HIST, encoding="utf-8") as f:
+            hist = json.load(f)
+    except (FileNotFoundError, ValueError):
+        return []
+    days = sorted(hist)
+    series, prev = [], None
+    for d in days:
+        total = hist[d]
+        series.append({"day": d, "visits": total if prev is None else max(0, total - prev)})
+        prev = total
+    return series
+
+
 # ---- the shared pixel canvas ----
 # 64x64 grid stored as one character per cell (index into PALETTE, '.' = empty).
 # Whole board is 4KB of text, so it ships in a single response and needs no diffing.
@@ -401,8 +502,18 @@ class Handler(BaseHTTPRequestHandler):
             payload = canvas_payload()
             payload["wait"] = max(0, int(CANVAS_COOLDOWN - (time.time() - CANVAS_LAST.get(self._client_ip(), 0))))
             return self._json(200, payload)
+        if self.path == "/api/status":
+            return self._json(200, {"services": services_status(),
+                                    "changes": recent_changes(),
+                                    "hits": hits_series()})
         if self.path.startswith("/api/count"):
-            self._json(200, {"n": bump_counter(peek="peek=1" in self.path)})
+            n = bump_counter(peek="peek=1" in self.path)
+            if "peek=1" not in self.path:
+                try:
+                    hits_record(n)
+                except OSError:
+                    pass
+            self._json(200, {"n": n})
         elif self.path == "/api/uptime":
             s = uptime_seconds()
             self._json(200, {"seconds": s, "days": s // 86400, "power": power_report()})
@@ -649,6 +760,19 @@ def selftest():
         canvas_place(0, 0, 5, path=cv)                                 # overwrite, not add
         assert canvas_payload(cv)["placed"] == 2
         assert len(canvas_read(cv)) == CANVAS_W * CANVAS_H             # size never drifts
+    with tempfile.TemporaryDirectory() as d:
+        hh = os.path.join(d, "hits.json")
+        base = 1_700_000_000
+        day = 86400
+        hits_record(10, path=hh, now=base)                             # day 1 ends at 10
+        hits_record(30, path=hh, now=base + day)                       # day 2 ends at 30
+        hits_record(45, path=hh, now=base + 2 * day)
+        s = hits_series(hh)
+        assert [r["visits"] for r in s] == [10, 20, 15], s             # deltas, not totals
+        assert hits_series("/nonexistent.json") == []
+        for i in range(200):                                           # pruning holds
+            hits_record(i, path=hh, now=base + i * day)
+        assert len(hits_series(hh)) <= 120
     print("selftest ok")
 
 
