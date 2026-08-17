@@ -459,7 +459,13 @@ document.addEventListener('click', function (e) {
             if (k !== 'node' && k !== 'pc') parts.push(k + ' ' + Math.round(p.sources[k].watts) + 'W');
           });
           var line = 'drawing ' + parts.join(' + ');
-          if (p.kwh >= 0.01) line += ' · ' + p.kwh.toFixed(1) + ' kWh burned since ' +
+          // energy is one quantity, shown in whatever unit keeps it readable:
+          // watt-hours until there's a kilowatt-hour, then kWh, then MWh.
+          var wh = p.kwh * 1000;
+          var energy = wh >= 1e6 ? (p.kwh / 1000).toFixed(2) + ' MWh'
+                     : wh >= 1000 ? p.kwh.toFixed(p.kwh >= 10 ? 1 : 2) + ' kWh'
+                     : Math.round(wh) + ' Wh';
+          if (wh >= 1) line += ' · ' + energy + ' burned since ' +
             new Date(p.since * 1000).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
           pw.textContent = line;
           pw.hidden = false;
