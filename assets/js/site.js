@@ -786,3 +786,44 @@ document.addEventListener('click', function (e) {
       .catch(function () {});
   }
 })();
+
+// ---- the question log (owner only; opened with the admin token in the URL) ----
+(function () {
+  var list = document.getElementById('asked-list');
+  if (!list) return;
+  var intro = document.getElementById('asked-intro');
+  var tok = new URLSearchParams(location.search).get('t');
+  if (!tok) { intro.textContent = 'This page needs the admin token in the URL.'; return; }
+  fetch('/api/asked?t=' + encodeURIComponent(tok))
+    .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+    .then(function (res) {
+      if (!res.ok) { intro.textContent = res.j.err || 'that token was not accepted.'; return; }
+      var rows = (res.j.asked || []).reverse();
+      intro.textContent = rows.length ? rows.length + ' questions, newest first. No IPs are kept.'
+                                      : 'nobody has asked the robot anything yet.';
+      rows.forEach(function (r) {
+        var li = document.createElement('li');
+        li.className = 'update';
+        var d = document.createElement('span');
+        d.className = 'update-date';
+        d.textContent = new Date(r.t * 1000).toLocaleString();
+        var body = document.createElement('div');
+        body.className = 'update-body';
+        var q = document.createElement('strong');
+        q.textContent = r.q;
+        var a = document.createElement('div');
+        a.className = 'update-text';
+        a.textContent = r.a;
+        body.appendChild(q); body.appendChild(a);
+        if ((r.src || []).length) {
+          var s = document.createElement('div');
+          s.className = 'ask-sources';
+          s.textContent = 'from: ' + r.src.join(' · ');
+          body.appendChild(s);
+        }
+        li.appendChild(d); li.appendChild(body);
+        list.appendChild(li);
+      });
+    })
+    .catch(function () { intro.textContent = 'the log is unreachable.'; });
+})();

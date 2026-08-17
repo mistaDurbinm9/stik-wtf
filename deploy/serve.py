@@ -231,6 +231,7 @@ def apply_email_body(rec):
 # asked to know anything: the matching page text is retrieved and pasted in front of it,
 # and it is told to answer from that or say it doesn't know.
 BOT_URL = os.environ.get("BOT_URL", "http://192.168.1.134:8080/v1/chat/completions")
+ASKED_FILE = os.environ.get("ASKED_FILE", "/var/lib/stik/asked.jsonl")
 ASK_LAST = {}                      # ip -> ts, one question per 30s
 ASK_SLOTS = threading.BoundedSemaphore(2)   # never more than two answers in flight: the
                                             # node has other jobs than talking to strangers
@@ -316,6 +317,40 @@ def retrieve(question, k=3, chunks=None):
 
 GREETINGS = {"hi", "hey", "hello", "yo", "sup", "howdy", "hiya", "oi", "hallo",
              "good morning", "good evening", "gm", "wsg", "whats up", "what's up"}
+
+
+def asked_log(question, answer, sources, path=None):
+    """Keep what people ask, so the owner can see what the bot is telling them.
+
+    Deliberately no IP address and no fingerprint of any kind: the footer promises no
+    tracking, and a log tying questions to visitors would quietly make that a lie.
+    """
+    path = path or ASKED_FILE
+    rec = {"t": int(time.time()), "q": question[:300], "a": (answer or "")[:600],
+           "src": [s.get("title", "") for s in (sources or [])]}
+    try:
+        with LOCK:
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            with open(path, "a", encoding="utf-8") as f:
+                f.write(json.dumps(rec) + "\n")
+            with open(path, encoding="utf-8") as f:
+                lines = f.readlines()
+            if len(lines) > 1000:
+                tmp = path + ".tmp"
+                with open(tmp, "w", encoding="utf-8") as f:
+                    f.writelines(lines[-500:])
+                os.replace(tmp, path)
+    except OSError as e:
+        print("asked log failed:", e, flush=True)
+    return rec
+
+
+def asked_list(limit=200, path=None):
+    try:
+        with open(path or ASKED_FILE, encoding="utf-8") as f:
+            return [json.loads(l) for l in f.readlines()[-limit:] if l.strip()]
+    except (FileNotFoundError, ValueError):
+        return []
 
 
 def is_greeting(question):
@@ -657,6 +692,13 @@ class Handler(BaseHTTPRequestHandler):
             payload = canvas_payload()
             payload["wait"] = max(0, int(CANVAS_COOLDOWN - (time.time() - CANVAS_LAST.get(self._client_ip(), 0))))
             return self._json(200, payload)
+        if self.path.startswith("/api/asked"):
+            from urllib.parse import parse_qs, urlparse
+            token = os.environ.get("ADMIN_TOKEN", "")
+            given = (parse_qs(urlparse(self.path).query).get("t") or [""])[0]
+            if not (token and secrets.compare_digest(given, token)):
+                return self._json(403, {"err": "needs the admin token"})
+            return self._json(200, {"asked": asked_list()})
         if self.path == "/api/status":
             return self._json(200, {"services": services_status(),
                                     "changes": recent_changes(),
@@ -716,6 +758,7 @@ class Handler(BaseHTTPRequestHandler):
             answer, sources = ask_bot(q)
             if not is_greeting(q):           # greetings are free; waking the model is not
                 ASK_LAST[ip] = now
+                asked_log(q, answer, sources)
             return self._json(200, {"answer": answer,
                                     "sources": [{"title": s["title"], "url": s["url"]} for s in sources]})
         if self.path == "/api/canvas":
@@ -918,6 +961,16 @@ def selftest():
     assert ring_hop("a", "next", solo) == "https://a.example"        # a ring of one
     assert ring_hop("a", "random", solo) == "https://a.example"      # ...doesn't hang
     assert isinstance(ring_members(path="/nonexistent/ring.json"), list)
+    with tempfile.TemporaryDirectory() as d:
+        ak = os.path.join(d, "asked.jsonl")
+        assert asked_list(path=ak) == []
+        rec = asked_log("what is the node", "a xeon", [{"title": "The Homelab"}], path=ak)
+        assert rec["q"] == "what is the node" and rec["src"] == ["The Homelab"]
+        assert "ip" not in rec and "addr" not in json.dumps(rec)     # privacy promise holds
+        for i in range(1200):
+            asked_log("q%d" % i, "a", [], path=ak)
+        rows = asked_list(path=ak)
+        assert len(rows) <= 200 and sum(1 for _ in open(ak)) <= 1000  # rotation holds
     with tempfile.TemporaryDirectory() as d:
         cv = os.path.join(d, "canvas.txt")
         blank = canvas_read(cv)
