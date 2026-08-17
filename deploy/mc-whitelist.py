@@ -81,7 +81,9 @@ def main():
     if not (TOKEN and RCON_PASS):
         print("ADMIN_TOKEN/RCON_PASS not set", file=sys.stderr)
         return 1
-    req = urllib.request.Request(QUEUE_URL + "?t=" + TOKEN)
+    # Cloudflare 403s the default Python-urllib user agent, so say who we actually are.
+    req = urllib.request.Request(QUEUE_URL + "?t=" + TOKEN,
+                                 headers={"User-Agent": "stik-whitelist-agent/1.0 (+https://stik.wtf)"})
     try:
         with urllib.request.urlopen(req, timeout=20) as r:
             names = json.load(r).get("names", [])
