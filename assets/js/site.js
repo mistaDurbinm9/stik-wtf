@@ -690,12 +690,11 @@ document.addEventListener('click', function (e) {
     when.className = 'update-date';
     when.textContent = 'submitted ' + new Date(a.t * 1000).toLocaleString();
     ul.appendChild(when);
-    if (a.status === 'approved') showCmd(a.mcname);
+    if (a.status === 'approved') showCmd();
     if (a.note) { msg.textContent = 'note: ' + a.note; }
   }
 
-  function showCmd(name) {
-    document.getElementById('rev-cmd').textContent = 'whitelist add ' + name;
+  function showCmd() {              // whitelisting is automatic now; just confirm it
     document.getElementById('rev-next').hidden = false;
   }
 
@@ -713,7 +712,7 @@ document.addEventListener('click', function (e) {
         badge.textContent = res.j.status.toUpperCase();
         badge.className = 'badge' + (res.j.status === 'approved' ? ' badge-live' : ' badge-offline');
         msg.textContent = 'saved.';
-        if (res.j.status === 'approved') showCmd(res.j.mcname);
+        if (res.j.status === 'approved') showCmd();
         else document.getElementById('rev-next').hidden = true;
       })
       .catch(function () { msg.textContent = 'that did not save.'; });
