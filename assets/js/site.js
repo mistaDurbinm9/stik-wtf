@@ -314,6 +314,94 @@ document.addEventListener('click', function (e) {
   });
 })();
 
+// ---- the shared pixel canvas ----
+(function () {
+  var cv = document.getElementById('cv');
+  if (!cv) return;
+  var ctx = cv.getContext('2d');
+  var status = document.getElementById('cv-status');
+  var placedBadge = document.getElementById('cv-placed');
+  var palEl = document.getElementById('cv-palette');
+  var palette = [], colour = 3, wait = 0, W = 64, H = 64;
+
+  function draw(grid) {
+    var img = ctx.createImageData(W, H);
+    for (var i = 0; i < W * H; i++) {
+      var ch = grid[i];
+      var hex = ch === '.' ? null : palette[ch.charCodeAt(0) - 97];
+      var r = 255, g = 255, b = 255, a = 0;
+      if (hex) {
+        r = parseInt(hex.slice(1, 3), 16); g = parseInt(hex.slice(3, 5), 16);
+        b = parseInt(hex.slice(5, 7), 16); a = 255;
+      }
+      img.data[i * 4] = r; img.data[i * 4 + 1] = g; img.data[i * 4 + 2] = b; img.data[i * 4 + 3] = a;
+    }
+    ctx.putImageData(img, 0, 0);
+  }
+
+  function buildPalette() {
+    palette.forEach(function (hex, idx) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'cv-swatch' + (idx === colour ? ' active' : '');
+      b.style.background = hex;
+      b.setAttribute('role', 'radio');
+      b.setAttribute('aria-label', 'colour ' + (idx + 1));
+      b.setAttribute('aria-checked', idx === colour ? 'true' : 'false');
+      b.addEventListener('click', function () {
+        colour = idx;
+        [].forEach.call(palEl.children, function (c, i) {
+          c.classList.toggle('active', i === idx);
+          c.setAttribute('aria-checked', i === idx ? 'true' : 'false');
+        });
+      });
+      palEl.appendChild(b);
+    });
+  }
+
+  function tick() {
+    if (wait > 0) {
+      wait--;
+      status.textContent = wait > 0 ? 'next pixel in ' + wait + 's' : 'your turn — click a pixel.';
+    }
+  }
+  setInterval(tick, 1000);
+
+  function apply(j) {
+    palette = j.palette;
+    if (!palEl.children.length) buildPalette();
+    draw(j.grid);
+    placedBadge.textContent = j.placed + ' PIXELS';
+    if (typeof j.wait === 'number') wait = j.wait;
+  }
+
+  function load() {
+    fetch('/api/canvas').then(function (r) { return r.json(); }).then(apply)
+      .catch(function () { status.textContent = 'the board is unreachable right now.'; });
+  }
+  load();
+  setInterval(function () { if (!document.hidden) load(); }, 8000);
+
+  cv.addEventListener('click', function (ev) {
+    var r = cv.getBoundingClientRect();
+    var x = Math.floor((ev.clientX - r.left) / r.width * W);
+    var y = Math.floor((ev.clientY - r.top) / r.height * H);
+    if (x < 0 || y < 0 || x >= W || y >= H) return;
+    if (wait > 0) { status.textContent = 'still cooling down — ' + wait + 's'; return; }
+    status.textContent = 'placing…';
+    fetch('/api/canvas', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ x: x, y: y, c: colour })
+    })
+      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+      .then(function (res) {
+        if (res.ok) { apply(res.j); status.textContent = 'placed at ' + x + ',' + y + '.'; }
+        else { wait = res.j.wait || 0; status.textContent = res.j.err || 'that did not place.'; }
+      })
+      .catch(function () { status.textContent = 'that did not place.'; });
+  });
+})();
+
 // ---- whitelist application form ----
 (function () {
   var form = document.getElementById('apply-form');

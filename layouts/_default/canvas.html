@@ -1,0 +1,21 @@
+{{ define "main" }}
+<article class="page">
+  {{ partial "page-sprite.html" . }}
+  <h1>{{ .Title }}</h1>
+  {{ .Content }}
+
+  <div class="card canvas-card">
+    <div class="card-top">
+      <h3>the board</h3>
+      <span class="badge" id="cv-placed">—</span>
+    </div>
+
+    <div class="canvas-wrap">
+      <canvas id="cv" width="64" height="64" aria-label="shared pixel canvas, 64 by 64"></canvas>
+    </div>
+
+    <div class="cv-palette" id="cv-palette" role="radiogroup" aria-label="colour"></div>
+    <p class="chat-status" id="cv-status">pick a colour, click a pixel.</p>
+  </div>
+</article>
+{{ end }}

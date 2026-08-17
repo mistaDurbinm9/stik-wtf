@@ -225,6 +225,56 @@ def apply_email_body(rec):
     return "\n".join(lines)
 
 
+# ---- the shared pixel canvas ----
+# 64x64 grid stored as one character per cell (index into PALETTE, '.' = empty).
+# Whole board is 4KB of text, so it ships in a single response and needs no diffing.
+CANVAS_FILE = os.environ.get("CANVAS_FILE", "/var/lib/stik/canvas.txt")
+CANVAS_W = CANVAS_H = 64
+CANVAS_COOLDOWN = 30                       # seconds between pixels, per visitor
+PALETTE = ["#14120f", "#f5f2ea", "#ffffff", "#B026FF", "#6b16a3", "#ff2e88",
+           "#ff6b35", "#ffd23f", "#7BBE4A", "#2f8f4e", "#00e5ff", "#2b6cb0",
+           "#79553a", "#8a857b", "#c9c4b8", "#ff9ecd"]
+CANVAS_LAST = {}                           # ip -> ts of last placed pixel
+
+
+def canvas_read(path=None):
+    try:
+        with open(path or CANVAS_FILE, encoding="utf-8") as f:
+            grid = f.read().strip()
+        if len(grid) == CANVAS_W * CANVAS_H:
+            return grid
+    except FileNotFoundError:
+        pass
+    return "." * (CANVAS_W * CANVAS_H)
+
+
+def canvas_place(x, y, colour, path=None):
+    """Paint one cell. Returns the new grid, or None if the request was nonsense."""
+    path = path or CANVAS_FILE
+    try:
+        x, y, colour = int(x), int(y), int(colour)
+    except (TypeError, ValueError):
+        return None
+    if not (0 <= x < CANVAS_W and 0 <= y < CANVAS_H and 0 <= colour < len(PALETTE)):
+        return None
+    with LOCK:
+        grid = canvas_read(path)
+        i = y * CANVAS_W + x
+        grid = grid[:i] + chr(ord("a") + colour) + grid[i + 1:]
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        tmp = path + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as f:
+            f.write(grid)
+        os.replace(tmp, path)
+    return grid
+
+
+def canvas_payload(path=None):
+    grid = canvas_read(path)
+    return {"w": CANVAS_W, "h": CANVAS_H, "palette": PALETTE, "grid": grid,
+            "placed": sum(1 for c in grid if c != "."), "cooldown": CANVAS_COOLDOWN}
+
+
 # ---- the "own metal" webring ----
 # Members live in the site repo (data/ring.json), so adding one is a git push like any
 # other content change; only the hop itself is dynamic.
@@ -347,6 +397,10 @@ class Handler(BaseHTTPRequestHandler):
                 if dest:
                     return self._redirect(dest)
             return self._redirect(SITE_URL + "/ring/")     # lost hops land on the index
+        if self.path == "/api/canvas":
+            payload = canvas_payload()
+            payload["wait"] = max(0, int(CANVAS_COOLDOWN - (time.time() - CANVAS_LAST.get(self._client_ip(), 0))))
+            return self._json(200, payload)
         if self.path.startswith("/api/count"):
             self._json(200, {"n": bump_counter(peek="peek=1" in self.path)})
         elif self.path == "/api/uptime":
@@ -380,6 +434,22 @@ class Handler(BaseHTTPRequestHandler):
             self._json(404, {"err": "not found"})
 
     def do_POST(self):
+        if self.path == "/api/canvas":
+            try:
+                body = json.loads(self.rfile.read(int(self.headers.get("Content-Length", 0)) or 0) or b"{}")
+            except (ValueError, TypeError):
+                return self._json(400, {"err": "bad json"})
+            ip = self._client_ip()
+            now = time.time()
+            wait = CANVAS_COOLDOWN - (now - CANVAS_LAST.get(ip, 0))
+            if wait > 0:
+                return self._json(429, {"err": "wait %ds" % int(wait + 1), "wait": int(wait + 1)})
+            if canvas_place(body.get("x"), body.get("y"), body.get("c")) is None:
+                return self._json(400, {"err": "off the board"})
+            CANVAS_LAST[ip] = now
+            payload = canvas_payload()
+            payload["wait"] = CANVAS_COOLDOWN
+            return self._json(200, payload)
         if self.path == "/api/power":
             secret = os.environ.get("POWER_TOKEN", "")
             given = self.headers.get("X-Power-Token", "")
@@ -564,6 +634,21 @@ def selftest():
     assert ring_hop("a", "next", solo) == "https://a.example"        # a ring of one
     assert ring_hop("a", "random", solo) == "https://a.example"      # ...doesn't hang
     assert isinstance(ring_members(path="/nonexistent/ring.json"), list)
+    with tempfile.TemporaryDirectory() as d:
+        cv = os.path.join(d, "canvas.txt")
+        blank = canvas_read(cv)
+        assert len(blank) == CANVAS_W * CANVAS_H and set(blank) == {"."}
+        assert canvas_place(-1, 0, 0, path=cv) is None                 # off the board
+        assert canvas_place(0, CANVAS_H, 0, path=cv) is None
+        assert canvas_place(0, 0, len(PALETTE), path=cv) is None       # no such colour
+        assert canvas_place("x", 0, 0, path=cv) is None
+        g = canvas_place(0, 0, 3, path=cv)
+        assert g[0] == "d" and canvas_payload(cv)["placed"] == 1       # colour 3 -> 'd'
+        g = canvas_place(63, 63, 0, path=cv)
+        assert g[-1] == "a" and canvas_payload(cv)["placed"] == 2
+        canvas_place(0, 0, 5, path=cv)                                 # overwrite, not add
+        assert canvas_payload(cv)["placed"] == 2
+        assert len(canvas_read(cv)) == CANVAS_W * CANVAS_H             # size never drifts
     print("selftest ok")
 
 

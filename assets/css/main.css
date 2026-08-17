@@ -359,6 +359,33 @@ main a:not(.btn):not(.card):hover { background: var(--accent); color: var(--acce
   .webring-icon { filter: invert(1); }
 }
 
+/* the shared canvas */
+.canvas-card:hover { transform: none; box-shadow: var(--shadow-offset) var(--shadow-offset) 0 var(--shadow); }
+.canvas-wrap { margin: 1rem 0; display: flex; justify-content: center; }
+#cv {
+  width: min(512px, 100%);
+  height: auto;
+  aspect-ratio: 1;
+  image-rendering: pixelated;
+  border: var(--border-w) solid var(--ink);
+  background: var(--surface);
+  cursor: crosshair;
+  touch-action: manipulation;
+}
+.cv-palette { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 0.6rem; }
+.cv-swatch {
+  width: 30px; height: 30px; padding: 0; cursor: pointer;
+  border: 2px solid var(--ink); border-radius: 2px;
+}
+.cv-swatch.active { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+/* ring nav in the footer: compact, on every page, so ring travellers can always hop on */
+.foot-rings { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; }
+.ring-nav { display: inline-flex; gap: 6px; align-items: baseline; white-space: nowrap; }
+.ring-nav a { text-decoration: none; border-bottom: 2px solid transparent; }
+.ring-nav a:hover { border-bottom-color: var(--accent); }
+.ring-nav a[rel] { font-family: var(--mono); color: var(--accent); padding: 0 2px; }
+
 /* the ring */
 .ring-tagline { font-family: var(--mono); font-size: 0.9rem; color: var(--muted); margin-top: -0.4rem; }
 .ring-count { font-family: var(--mono); font-size: 0.9rem; color: var(--muted); font-weight: 400; }
