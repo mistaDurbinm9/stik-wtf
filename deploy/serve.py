@@ -281,9 +281,15 @@ def retrieve(question, k=2, chunks=None):
     scored = []
     for c in chunks:
         hay = (c["title"] + " " + c["text"]).lower()
-        score = sum(hay.count(w) for w in words) + 3 * sum(w in c["title"].lower() for w in words)
-        if score:
-            scored.append((score, c))
+        hits = sum(hay.count(w) for w in words)
+        if not hits:
+            continue
+        # Coverage dominates frequency: a page touching every word of the question beats
+        # a one-line update that happens to repeat a single word. ("what hardware is the
+        # node" should reach the homelab page, not two changelog entries about the node.)
+        coverage = sum(1 for w in words if w in hay)
+        title_hits = sum(1 for w in words if w in c["title"].lower())
+        scored.append((coverage * 100 + title_hits * 20 + min(hits, 20), c))
     scored.sort(key=lambda s: -s[0])
     return [c for _s, c in scored[:k]]
 
