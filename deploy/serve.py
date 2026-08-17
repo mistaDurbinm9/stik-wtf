@@ -264,18 +264,27 @@ def site_chunks(now=None):
             url = "/" + rel[:-3].replace("_index", "").replace("index", "").strip("/")
             text = " ".join(body.split())
             if len(text) > 40:
-                chunks.append({"title": title, "url": url.rstrip("/") + "/", "text": text[:1200]})
+                chunks.append({"title": title, "url": url.rstrip("/") + "/", "text": text[:900]})
     CHUNKS_CACHE.update(t=now, data=chunks)
     return chunks
 
 
 STOPWORDS = {"the", "a", "an", "is", "are", "do", "does", "what", "how", "who", "why",
              "can", "i", "you", "your", "my", "to", "of", "on", "in", "for", "and", "it"}
+# words that mean the same thing to a reader but not to a keyword scorer
+SYNONYMS = {"hardware": ["xeon", "cpu", "ram", "ssd", "specs"],
+            "specs": ["xeon", "cpu", "ram", "ghz"],
+            "power": ["watts", "draw"],
+            "join": ["whitelist", "apply"],
+            "code": ["git", "forge", "repo"],
+            "shop": ["store", "neoaquatics"]}
 
 
-def retrieve(question, k=2, chunks=None):
+def retrieve(question, k=3, chunks=None):
     chunks = site_chunks() if chunks is None else chunks
     words = [w for w in re.findall(r"[a-z0-9]+", question.lower()) if w not in STOPWORDS]
+    for w in list(words):
+        words.extend(SYNONYMS.get(w, []))
     if not words or not chunks:
         return []
     scored = []
