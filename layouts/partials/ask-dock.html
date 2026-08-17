@@ -1,0 +1,36 @@
+<div class="ask-dock" id="ask-dock">
+  <button class="ask-toggle" id="ask-toggle" aria-expanded="false" aria-controls="ask-panel" title="ask stik's little robot">
+    <svg class="ask-mascot" viewBox="0 0 12 14" width="26" height="30" aria-hidden="true" shape-rendering="crispEdges">
+      <g fill="var(--ink)">
+        <rect x="5" y="1" width="3" height="3"/><rect x="6" y="4" width="1" height="3"/>
+        <rect x="3" y="5" width="7" height="1"/>
+        <rect x="5" y="7" width="1" height="1"/><rect x="4" y="8" width="1" height="1"/><rect x="3" y="9" width="1" height="1"/>
+        <rect x="7" y="7" width="1" height="1"/><rect x="8" y="8" width="1" height="1"/><rect x="9" y="9" width="1" height="1"/>
+        <rect x="2" y="10" width="3" height="1"/><rect x="8" y="10" width="3" height="1"/>
+      </g>
+      <g fill="var(--accent)">
+        <rect x="6" y="8" width="1" height="1"/><rect x="5" y="9" width="3" height="1"/>
+        <rect x="5" y="10" width="3" height="1"/><rect x="5" y="11" width="3" height="1"/>
+        <rect x="6" y="12" width="1" height="1"/>
+      </g>
+    </svg>
+    <span class="ask-toggle-label">ask</span>
+  </button>
+
+  <div class="ask-nudge" id="ask-nudge" hidden aria-hidden="true"></div>
+
+  <div class="ask-panel" id="ask-panel" hidden>
+    <div class="ask-panel-head">
+      <strong>stik's little robot</strong>
+      <button class="ask-close" id="ask-close" aria-label="close">✕</button>
+    </div>
+    <div class="ask-log" id="ask-log">
+      <p class="ask-hello">hey. I've read this whole site and nothing else — ask me about the
+        homelab, the server, the projects. I run on a 2013 Xeon, so give me a few seconds.</p>
+    </div>
+    <form id="ask-form" autocomplete="off">
+      <input id="ask-q" type="text" maxlength="300" required placeholder="ask something…" aria-label="your question">
+      <button class="btn" type="submit">→</button>
+    </form>
+  </div>
+</div>

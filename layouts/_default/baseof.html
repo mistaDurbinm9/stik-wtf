@@ -43,6 +43,7 @@
   </p>
   <p class="foot-meta"><span id="hits" hidden></span><span id="uptime" hidden></span><span id="power" title="node: both CPU packages + DRAM, measured via RAPL. pc: CPU package + GPUs, and only while it's awake. Component readings, not wall readings — drives, fans and PSU losses aren't counted." hidden></span></p>
 </footer>
+{{ partial "ask-dock.html" . }}
 {{ partial "pix-fish.html" . }}
 {{ partial "pix-stik.html" . }}
 {{ with resources.Get "js/site.js" | minify | fingerprint }}<script src="{{ .RelPermalink }}" defer></script>{{ end }}

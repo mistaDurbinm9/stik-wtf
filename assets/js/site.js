@@ -314,46 +314,85 @@ document.addEventListener('click', function (e) {
   });
 })();
 
-// ---- ask the little robot ----
+// ---- ask the little robot: docked bottom-right on every page ----
 (function () {
+  var dock = document.getElementById('ask-dock');
+  if (!dock) return;
+  var toggle = document.getElementById('ask-toggle');
+  var panel = document.getElementById('ask-panel');
+  var log = document.getElementById('ask-log');
+  var nudge = document.getElementById('ask-nudge');
   var form = document.getElementById('ask-form');
-  if (!form) return;
-  var out = document.getElementById('ask-answer');
-  var status = document.getElementById('ask-status');
+  var input = document.getElementById('ask-q');
+  var opened = false, busy = false;
+
+  var NUDGES = ['ask me something', 'what is in the node?', 'how do I join the server?',
+                'I have read every page here', 'go on, ask'];
+  var nudgeIdx = Math.floor(Math.random() * NUDGES.length);
+
+  function showNudge() {
+    if (opened || document.hidden) return;
+    nudge.textContent = NUDGES[nudgeIdx++ % NUDGES.length];
+    nudge.hidden = false;
+    toggle.classList.add('waving');
+    setTimeout(function () { nudge.hidden = true; toggle.classList.remove('waving'); }, 6000);
+  }
+  setTimeout(showNudge, 20000);              // first tap on the shoulder
+  setInterval(showNudge, 120000);            // then every couple of minutes, until opened
+
+  function setOpen(open) {
+    opened = opened || open;
+    panel.hidden = !open;
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    dock.classList.toggle('open', open);
+    if (open) { nudge.hidden = true; toggle.classList.remove('waving'); input.focus(); }
+  }
+  toggle.addEventListener('click', function () { setOpen(panel.hidden); });
+  document.getElementById('ask-close').addEventListener('click', function () { setOpen(false); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !panel.hidden) setOpen(false); });
+
+  function bubble(cls, text) {
+    var d = document.createElement('div');
+    d.className = 'ask-msg ' + cls;
+    d.textContent = text;                    // model output is text, never markup
+    log.appendChild(d);
+    log.scrollTop = log.scrollHeight;
+    return d;
+  }
+
   form.addEventListener('submit', function (ev) {
     ev.preventDefault();
-    var q = document.getElementById('ask-q').value.trim();
-    if (q.length < 3) return;
-    status.textContent = 'thinking… (a few seconds, it is an old CPU)';
-    out.hidden = true;
+    var q = input.value.trim();
+    if (!q || busy) return;                  // any length goes: "hi" is a fair question
+    busy = true;
+    bubble('from-you', q);
+    input.value = '';
+    var thinking = bubble('from-bot thinking', 'thinking…');
     fetch('/api/ask', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ q: q })
     })
       .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
       .then(function (res) {
-        if (!res.ok) { status.textContent = res.j.err || 'it could not answer.'; return; }
-        status.textContent = '';
-        out.textContent = '';
-        var p = document.createElement('p');
-        p.textContent = res.j.answer;            // model output: text only, never HTML
-        out.appendChild(p);
+        thinking.remove();
+        if (!res.ok) { bubble('from-bot', res.j.err || 'I could not answer that.'); return; }
+        bubble('from-bot', res.j.answer);
         if ((res.j.sources || []).length) {
-          var s = document.createElement('p');
-          s.className = 'ask-sources';
-          s.appendChild(document.createTextNode('read: '));
+          var s = document.createElement('div');
+          s.className = 'ask-msg ask-sources';
+          s.appendChild(document.createTextNode('from: '));
           res.j.sources.forEach(function (src, i) {
-            if (i) s.appendChild(document.createTextNode(', '));
+            if (i) s.appendChild(document.createTextNode(' · '));
             var a = document.createElement('a');
-            a.href = src.url;
-            a.textContent = src.title;
+            a.href = src.url; a.textContent = src.title;
             s.appendChild(a);
           });
-          out.appendChild(s);
+          log.appendChild(s);
+          log.scrollTop = log.scrollHeight;
         }
-        out.hidden = false;
       })
-      .catch(function () { status.textContent = 'it could not answer.'; });
+      .catch(function () { thinking.remove(); bubble('from-bot', 'I could not reach my own brain. Try again in a minute.'); })
+      .then(function () { busy = false; });
   });
 })();
 

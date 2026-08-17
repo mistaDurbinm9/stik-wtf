@@ -303,20 +303,40 @@ def retrieve(question, k=3, chunks=None):
     return [c for _s, c in scored[:k]]
 
 
+GREETINGS = {"hi", "hey", "hello", "yo", "sup", "howdy", "hiya", "oi", "hallo",
+             "good morning", "good evening", "gm", "wsg", "whats up", "what's up"}
+
+
+def demarkdown(text):
+    """The model copies markdown out of the pages; the answer is prose, so flatten it."""
+    text = re.sub(r"\[([^\]]+)\]\([^)]*\)", r"\1", text)   # [label](url) -> label
+    text = re.sub(r"[`*]", "", text)                       # bold/italic/code marks
+    text = re.sub(r"^[#>\s-]+", "", text, flags=re.M)      # headings, quotes, bullets
+    return " ".join(text.split())
+
+
 def ask_bot(question, timeout=60):
     """Returns (answer, sources). Never raises — the box degrades to an apology."""
     import urllib.request
+    plain = question.strip().strip("!?.").lower()
+    if plain in GREETINGS or len(plain) < 3:
+        return ("hey. I'm stik's little robot — I've read this site and nothing else. "
+                "Ask me about the homelab, the minecraft server, the projects, or how to "
+                "join anything.", [])
     found = retrieve(question)
     if not found:
-        return ("I only know what's written on this site, and I couldn't find a page "
-                "about that. Try asking about the homelab, the minecraft server, or the projects.", [])
+        return ("I couldn't find a page about that — I only know what's written on this "
+                "site. Try the homelab, the minecraft server, the forge, or the shop.", [])
     context = "\n\n".join("## %s (%s)\n%s" % (c["title"], c["url"], c["text"]) for c in found)
     payload = {
         "messages": [
             {"role": "system", "content":
-             "You answer questions about stik.wtf, a personal website. Use ONLY the page "
-             "text provided. If the answer isn't there, say you don't know. Two sentences "
-             "maximum. Write plainly, no lists, no markdown."},
+             "You are stik's little robot: a small friendly bot on stik.wtf, a personal "
+             "website. Answer the question using ONLY the page text given to you. If it "
+             "isn't there, say so plainly. Be warm and casual, like a person who knows the "
+             "site well. One to three sentences of plain prose — never markdown, never "
+             "links, never bullet points, never repeat the page text verbatim. The reader "
+             "is shown the source pages separately, so just answer in your own words."},
             {"role": "user", "content": "Pages:\n%s\n\nQuestion: %s" % (context, question)},
         ],
         "max_tokens": 120, "temperature": 0.3,
@@ -326,7 +346,7 @@ def ask_bot(question, timeout=60):
     try:
         with urllib.request.urlopen(req, timeout=timeout) as r:
             data = json.load(r)
-        answer = data["choices"][0]["message"]["content"].strip()
+        answer = demarkdown(data["choices"][0]["message"]["content"])
     except Exception as e:
         print("ask failed:", e, flush=True)
         return ("The little robot is asleep or overloaded — try again in a minute.", found)
@@ -659,15 +679,16 @@ class Handler(BaseHTTPRequestHandler):
             except (ValueError, TypeError):
                 return self._json(400, {"err": "bad json"})
             q = (body.get("q") or "").strip()[:300]
-            if len(q) < 3:
-                return self._json(400, {"err": "ask a longer question"})
+            if not q:
+                return self._json(400, {"err": "say something"})
             ip = self._client_ip()
             now = time.time()
             wait = ASK_COOLDOWN - (now - ASK_LAST.get(ip, 0))
             if wait > 0:
                 return self._json(429, {"err": "one question per %ds — it thinks slowly" % ASK_COOLDOWN})
-            ASK_LAST[ip] = now
             answer, sources = ask_bot(q)
+            if sources:                      # only real model calls cost a cooldown
+                ASK_LAST[ip] = now
             return self._json(200, {"answer": answer,
                                     "sources": [{"title": s["title"], "url": s["url"]} for s in sources]})
         if self.path == "/api/canvas":
