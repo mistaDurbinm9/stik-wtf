@@ -270,9 +270,13 @@ def site_chunks(now=None):
 
 
 STOPWORDS = {"the", "a", "an", "is", "are", "do", "does", "what", "how", "who", "why",
-             "can", "i", "you", "your", "my", "to", "of", "on", "in", "for", "and", "it"}
+             "can", "i", "you", "your", "my", "to", "of", "on", "in", "for", "and", "it",
+             "whats", "hows", "whos", "wheres", "theres", "have", "has", "there", "any",
+             "me", "about", "tell", "with", "was", "were", "this", "that"}
 # words that mean the same thing to a reader but not to a keyword scorer
 SYNONYMS = {"hardware": ["xeon", "cpu", "ram", "ssd", "specs"],
+            "node": ["homelab", "proxmox", "xeon"],
+            "server": ["minecraft", "node"],
             "specs": ["xeon", "cpu", "ram", "ghz"],
             "power": ["watts", "draw"],
             "join": ["whitelist", "apply"],
@@ -298,7 +302,12 @@ def retrieve(question, k=3, chunks=None):
         # node" should reach the homelab page, not two changelog entries about the node.)
         coverage = sum(1 for w in words if w in hay)
         title_hits = sum(1 for w in words if w in c["title"].lower())
-        scored.append((coverage * 100 + title_hits * 20 + min(hits, 20), c))
+        score = coverage * 100 + title_hits * 20 + min(hits, 20)
+        # changelog entries repeat topic words in one line and would otherwise outrank the
+        # page that actually explains the thing; they win only when nothing else matches
+        if c["url"].startswith("/updates/"):
+            score -= 60
+        scored.append((score, c))
     scored.sort(key=lambda s: -s[0])
     return [c for _s, c in scored[:k]]
 
