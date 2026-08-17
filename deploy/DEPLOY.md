@@ -142,3 +142,31 @@ and rejects activation (error d5), so a smart plug is the only route to true wal
 
 Energy only accumulates between samples less than 5 minutes apart, so downtime can never
 invent usage, and a source that goes quiet for 5 minutes disappears from the footer.
+
+## Whitelist + Discord automation (added 2026-08-17)
+
+Approving an application at `/apply/review/` now does two things by itself:
+
+1. **Whitelist.** The name joins `GET /api/whitelist-queue?t=<ADMIN_TOKEN>`. On CT 901,
+   `mc-whitelist.py` (timer, 60s) pulls that list over the public internet and runs
+   `whitelist add` through RCON on its own localhost, then records the name in
+   `/var/lib/mc-whitelist-done`.
+
+   **The direction is deliberate.** CT 901's firewall drops inbound except the game ports
+   and blocks all LAN egress; the game server is isolated on purpose. So the game server
+   pulls, and the web container never reaches it. If CT 902 were ever compromised the
+   worst it could do is get someone whitelisted, not reach a server console. RCON is
+   enabled but only bound within CT 901 (`server.properties.bak-rcon` is the backup).
+
+2. **Discord.** On CT 902, `discord-agent.py` (timer, 60s) looks for approved applications
+   whose Discord handle now belongs to a guild member, grants **Whitelisted** plus
+   **Java** and/or **Bedrock** matching the platform on their form, and DMs them a
+   welcome. Config in `/etc/discord-agent.env` (0600). `--dry-run` reports matches
+   without touching anything.
+
+   A bot cannot DM someone who doesn't already share a server with it, which is why the
+   invite is on the apply page *before* submission — applicants who haven't joined stay
+   pending and are picked up automatically whenever they do.
+
+Gotcha worth remembering: **Cloudflare 403s the default `Python-urllib` user agent.** Any
+agent fetching from stik.wtf must set its own `User-Agent`.
