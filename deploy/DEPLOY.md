@@ -110,3 +110,24 @@ journalctl -u stik-helper -n 5     # shows: application <id> from TestName (mail
 `enable-rcon=false`, and turning RCON on requires restarting the server (kicking whoever
 is online). If wanted later, enable RCON in `server.properties`, then have serve.py send
 `whitelist add` over RCON on approval.
+
+## Power metering (added 2026-08-16)
+
+The footer shows live draw and a running kWh total, fed by pushes to
+`POST /api/power` (header `X-Power-Token`, shared secret in `/etc/stik-helper.env` on
+CT 902 and `/etc/stik-power.env` on the host). State lives in `/var/lib/stik/power.json`.
+
+- **Node** — `deploy/stik-power.py` on the **Proxmox host** (RAPL is host-only sysfs),
+  run by `stik-power.timer` every 60s. Reports both CPU packages and their DRAM
+  domains: ~150W idle, of which ~68W is the 384GB of DDR3.
+- **PC** — `deploy/stik-power-pc.ps1`, registered as the "stik power" scheduled task
+  (`schtasks /delete /tn "stik power" /f` to stop). Reports GPUs via `nvidia-smi`.
+  CPU package power is included only if LibreHardwareMonitor is running with its web
+  server on :8085; otherwise it is left out rather than guessed.
+
+Neither figure is a wall measurement — no drives, fans, board or PSU losses. IPMI/DCMI
+would give whole-chassis draw but this board reports `Power reading state: deactivated`
+and rejects activation (error d5), so a smart plug is the only route to true wall watts.
+
+Energy only accumulates between samples less than 5 minutes apart, so downtime can never
+invent usage, and a source that goes quiet for 5 minutes disappears from the footer.

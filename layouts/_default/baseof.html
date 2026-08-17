@@ -38,7 +38,7 @@
   <p class="foot-meta">no tracking, no analytics, no cookies — just a hit counter on my own box.</p>
   <p class="foot-meta"><a href="https://hotlinewebring.club/stik/previous">←</a> hotline webring <a href="https://hotlinewebring.club/stik/next">→</a></p>
   <p class="foot-meta"><span id="hits" hidden></span><span id="uptime" hidden></span></p>
-  <p class="foot-meta" id="power" title="measured at the CPU packages and memory controllers — not a wall reading" hidden></p>
+  <p class="foot-meta" id="power" title="node: both CPU packages + DRAM, measured via RAPL. pc: GPUs via nvidia-smi, and only while it's awake. Component readings, not wall readings — drives, fans and PSU losses aren't counted." hidden></p>
 </footer>
 {{ partial "pix-fish.html" . }}
 {{ partial "pix-stik.html" . }}
