@@ -6,7 +6,8 @@ title: Contact
 - Minecraft: `play.stik.wtf` — whitelisted; [apply to join](/apply/)
 - Email: [tyler@stik.wtf](mailto:tyler@stik.wtf) — self-explanatory, actually reaches me
 
-<!-- TODO(author): paste these in when ready (one line each):
-- Discord: <handle or invite link>
+- Discord: [discord.gg/t88wjH9X2X](https://discord.gg/t88wjH9X2X)
+
+<!-- TODO(author): paste this in when ready:
 - YouTube: <channel URL>
 -->
