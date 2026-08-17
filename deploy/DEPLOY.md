@@ -128,8 +128,13 @@ CT 902 and `/etc/stik-power.env` on the host). State lives in `/var/lib/stik/pow
   can hide it). wscript has no console, so the run is silent. Running the task as SYSTEM
   also works and is invisible, but registering that needs an elevated shell.
   The token lives in `%USERPROFILE%\stik	oken.txt` (env var takes precedence).
-  CPU package power is included only if LibreHardwareMonitor is running with its web
-  server on :8085; otherwise it is left out rather than guessed.
+  CPU package power comes from LibreHardwareMonitor, installed portable at
+  `%LOCALAPPDATA%\Programs\LibreHardwareMonitor` and started at logon by a scheduled
+  task running at highest privileges (it needs admin to read the CPU's power registers).
+  Its config there already enables the web server on :8085 and start-minimised-to-tray.
+  PawnIO (the signed kernel driver that replaced WinRing0) is offered on first run but
+  turned out **not** to be needed for package power on this CPU. If LHM is not running,
+  the agent reports GPUs only rather than guessing at the CPU.
 
 Neither figure is a wall measurement — no drives, fans, board or PSU losses. IPMI/DCMI
 would give whole-chassis draw but this board reports `Power reading state: deactivated`

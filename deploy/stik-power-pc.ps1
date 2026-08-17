@@ -45,7 +45,9 @@ try {
     $stack.Push($lhm)
     while ($stack.Count -gt 0) {
         $n = $stack.Pop()
-        if ($n.Text -match 'Package' -and $n.Value -match 'W$') {
+        # Exactly "CPU Package" — the GPUs also publish a "GPU Package" sensor, and a
+        # loose match would label GPU watts as CPU and double-count against nvidia-smi.
+        if ($n.Text -eq 'CPU Package' -and $n.Value -match 'W$') {
             $w = [double]($n.Value -replace '[^\d\.]', '')
             if ($w -gt 0 -and -not $detail.ContainsKey('cpu')) {
                 $detail['cpu'] = [math]::Round($w, 1)
