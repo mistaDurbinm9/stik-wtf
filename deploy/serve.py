@@ -226,6 +226,57 @@ def apply_email_body(rec):
     return "\n".join(lines)
 
 
+# ---- minecraft RCON: enough of the protocol to run one command ----
+# Source RCON is tiny: little-endian length, request id, type, body, two nulls.
+# type 3 = login, 2 = command, and a login failure comes back as id -1.
+def rcon(command, host=None, port=None, password=None, timeout=6):
+    import socket
+    import struct
+    host = host or os.environ.get("RCON_HOST", "192.168.1.68")
+    port = int(port or os.environ.get("RCON_PORT", "25575"))
+    password = password or os.environ.get("RCON_PASS", "")
+    if not password:
+        return (False, "RCON_PASS not set")
+
+    def pack(req_id, req_type, body):
+        payload = struct.pack("<ii", req_id, req_type) + body.encode("utf8") + b"\x00\x00"
+        return struct.pack("<i", len(payload)) + payload
+
+    def read(sock):
+        raw = sock.recv(4)
+        if len(raw) < 4:
+            return (None, "")
+        size = struct.unpack("<i", raw)[0]
+        data = b""
+        while len(data) < size:
+            chunk = sock.recv(size - len(data))
+            if not chunk:
+                break
+            data += chunk
+        rid, _rtype = struct.unpack("<ii", data[:8])
+        return (rid, data[8:-2].decode("utf8", "replace"))
+
+    try:
+        with socket.create_connection((host, port), timeout=timeout) as s:
+            s.settimeout(timeout)
+            s.sendall(pack(1, 3, password))
+            rid, _ = read(s)
+            if rid == -1 or rid is None:
+                return (False, "rcon auth rejected")
+            s.sendall(pack(2, 2, command))
+            _rid, body = read(s)
+            return (True, body.strip())
+    except OSError as e:
+        return (False, "rcon unreachable: %s" % e)
+
+
+def whitelist_add(name):
+    """Whitelist a player. Returns (ok, what the server said)."""
+    if not re.fullmatch(r"[A-Za-z0-9_ .]{2,32}", name or ""):
+        return (False, "that name doesn't look like a minecraft name")
+    return rcon("whitelist add %s" % name)
+
+
 # ---- the ask box: a small model, answering only from this site's own pages ----
 # A 1.5B model on a 2013 Xeon invents things when left to its own memory, so it is never
 # asked to know anything: the matching page text is retrieved and pasted in front of it,
@@ -817,7 +868,13 @@ class Handler(BaseHTTPRequestHandler):
                                body.get("decision", ""), body.get("note", ""))
             if not rec:
                 return self._json(404, {"err": "no such application, or bad decision"})
-            return self._json(200, {"ok": True, "status": rec["status"], "mcname": rec["mcname"]})
+            out = {"ok": True, "status": rec["status"], "mcname": rec["mcname"]}
+            if rec["status"] == "approved":          # actually let them in
+                ok, said = whitelist_add(rec["mcname"])
+                out["whitelisted"] = ok
+                out["server_said"] = said
+                print("whitelist %s: %s (%s)" % (rec["mcname"], ok, said), flush=True)
+            return self._json(200, out)
         if self.path == "/api/chat":
             import re
             try:
@@ -946,6 +1003,9 @@ def selftest():
         stale = power_report(path=p, now=gap + 600)                  # 10 min of silence
         assert stale["sources"] == {} and stale["watts"] == 0        # powered off, honestly
         assert abs(stale["kwh"] - 0.1) < 1e-6                        # energy total survives
+    assert whitelist_add("bad;name")[0] is False           # no command injection
+    assert whitelist_add("")[0] is False
+    assert whitelist_add("x" * 40)[0] is False
     ring = [{"slug": "a", "url": "https://a.example"},
             {"slug": "b", "url": "https://b.example"},
             {"slug": "c", "url": "https://c.example"}]
