@@ -109,11 +109,13 @@ main a:not(.btn):not(.card):hover { background: var(--accent); color: var(--acce
   border-radius: var(--radius);
   box-shadow: var(--shadow-offset) var(--shadow-offset) 0 var(--shadow);
 }
-.card:hover, .btn:hover {
+/* Only things you actually click press in. A card that merely contains a form used to
+   shift under a long-press, which on a phone cancels text selection and the paste menu. */
+a.card:hover, .btn:hover {
   transform: translate(2px, 2px);
   box-shadow: calc(var(--shadow-offset) - 2px) calc(var(--shadow-offset) - 2px) 0 var(--shadow);
 }
-.card:active, .btn:active {
+a.card:active, .btn:active {
   transform: translate(var(--shadow-offset), var(--shadow-offset));
   box-shadow: 0 0 0 var(--shadow);
 }
@@ -503,7 +505,12 @@ main a:not(.btn):not(.card):hover { background: var(--accent); color: var(--acce
 .ask-sources { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); }
 
 /* the ask dock: a bar the width of the panel, bottom-right, out of the reading column */
-.ask-dock { position: fixed; right: 18px; bottom: 18px; z-index: 97; width: min(340px, calc(100vw - 36px)); }
+.ask-dock {
+  position: fixed; right: 18px; bottom: 18px; z-index: 97;
+  width: min(340px, calc(100vw - 36px));
+  pointer-events: none;      /* the box floats over the page; only its controls catch taps */
+}
+.ask-toggle, .ask-panel { pointer-events: auto; }
 
 /* the stage the robot climbs out of: clipped, so he can hide behind the bar */
 .ask-stage { position: relative; height: 30px; overflow: hidden; pointer-events: none; }
@@ -553,5 +560,11 @@ main a:not(.btn):not(.card):hover { background: var(--accent); color: var(--acce
 #ask-form { display: flex; gap: 6px; margin-top: 6px; }
 #ask-q { flex: 1 1 auto; min-width: 0; font-family: var(--font); font-size: 0.9rem; color: var(--ink); background: var(--surface); border: 2px solid var(--ink); padding: 6px 8px; }
 #ask-form .btn { padding: 6px 12px; }
-@media (max-width: 520px) { .ask-dock { right: 10px; bottom: 10px; left: 10px; width: auto; } }
+@media (max-width: 520px) {
+  /* a full-width bar here sat on top of forms and ate the paste popup */
+  .ask-dock { right: 10px; bottom: 10px; left: auto; width: auto; }
+  .ask-toggle { width: auto; }
+  .ask-panel { width: min(320px, calc(100vw - 24px)); }
+  .ask-stage { display: none; }        /* no room for the robot to walk */
+}
 @media (prefers-reduced-motion: reduce) { .ask-stage { display: none; } }

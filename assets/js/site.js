@@ -2,6 +2,8 @@
 
 // ---- pixel burst on click: 6 pixels on buttons, 3 anywhere else ----
 document.addEventListener('pointerdown', function (e) {
+  // never on form fields: the burst is noise when you're trying to type or paste
+  if (e.target instanceof Element && e.target.closest('input, textarea, select')) return;
   var btn = e.target.closest('.btn, .mc-copy');
   var n = btn ? 6 : 3;
   for (var i = 0; i < n; i++) {
