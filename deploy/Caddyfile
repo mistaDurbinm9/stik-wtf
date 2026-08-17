@@ -30,6 +30,12 @@ http://www.stik.wtf {
 	handle /api/* {
 		reverse_proxy 127.0.0.1:8787
 	}
+
+	# webring hops are dynamic redirects; /ring/ itself stays a static Hugo page
+	@ringhop path_regexp ^/ring/[^/]+/(next|prev|previous|random)/?$
+	handle @ringhop {
+		reverse_proxy 127.0.0.1:8787
+	}
 	handle {
 		try_files {path} {path}/
 		file_server

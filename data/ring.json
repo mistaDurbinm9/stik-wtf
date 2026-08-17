@@ -1,0 +1,20 @@
+{
+  "name": "own metal",
+  "tagline": "sites whose owner runs the whole stack — the web page, and everything behind it",
+  "rules": [
+    "Your site is served from hardware you control. A box at home, a rack you rent, a Pi on a shelf — not a platform that builds and hosts it for you.",
+    "You run at least one other service yourself: git, mail, chat, a game server, a store, whatever. The web page is the front door, not the whole house.",
+    "It's personal. A company's status page is not in the spirit.",
+    "Show the ring links somewhere a visitor can find them.",
+    "No bigotry, no hate, no scraped slop."
+  ],
+  "members": [
+    {
+      "slug": "stik",
+      "name": "stik.wtf",
+      "url": "https://stik.wtf",
+      "about": "a Xeon in a house running a minecraft server, a git forge, a storefront and this site",
+      "joined": "2026-08-16"
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{{ define "main" }}
+{{ $ring := site.Data.ring }}
+<article class="page">
+  <h1>{{ $ring.name }}</h1>
+  <p class="ring-tagline">{{ $ring.tagline }}</p>
+  {{ .Content }}
+
+  <p class="webring">
+    <a class="btn" href="/ring/stik/prev">← prev</a>
+    <a class="btn" href="/ring/stik/random">random</a>
+    <a class="btn" href="/ring/stik/next">next →</a>
+  </p>
+
+  <h2>members <span class="ring-count">({{ len $ring.members }})</span></h2>
+  <ul class="updates ring-members">
+    {{ range $ring.members }}
+    <li class="update">
+      <span class="update-date">{{ .joined }}</span>
+      <div class="update-body">
+        <strong><a href="{{ .url }}">{{ .name }}</a></strong>
+        <div class="update-text">{{ .about }}</div>
+      </div>
+    </li>
+    {{ end }}
+  </ul>
+
+  <h2>the rules</h2>
+  <ol class="ring-rules">
+    {{ range $ring.rules }}<li>{{ . }}</li>{{ end }}
+  </ol>
+
+  <h2>joining</h2>
+  <p>Pick a short slug, put the widget on your site, then send me the details —
+    <a href="mailto:tyler@stik.wtf?subject=own%20metal%20webring">tyler@stik.wtf</a>
+    or a pull request adding yourself to <code>data/ring.json</code>
+    (<a href="https://git.stik.wtf/stik/stik-wtf">my forge</a> or
+    <a href="https://github.com/mistaDurbinm9/stik-wtf">GitHub</a>). Tell me what you host
+    yourself — that's the whole membership test.</p>
+
+  <pre class="snippet"><code id="snip-ring">&lt;a href="https://stik.wtf/ring/YOUR_SLUG/prev"&gt;←&lt;/a&gt;
+&lt;a href="https://stik.wtf/ring/"&gt;own metal&lt;/a&gt;
+&lt;a href="https://stik.wtf/ring/YOUR_SLUG/next"&gt;→&lt;/a&gt;</code></pre>
+  <p><button class="btn copy-snip" type="button" data-copy-target="snip-ring">COPY</button></p>
+
+  <h2>the badge</h2>
+  <p><img src="/badges/own-metal.svg" width="176" height="62" alt="own metal webring 88x31 badge" class="own-button-img"> optional, but it's tradition.</p>
+  <pre class="snippet"><code id="snip-ring-badge">&lt;a href="https://stik.wtf/ring/"&gt;&lt;img src="https://stik.wtf/badges/own-metal.svg" width="88" height="31" alt="own metal webring"&gt;&lt;/a&gt;</code></pre>
+  <p><button class="btn copy-snip" type="button" data-copy-target="snip-ring-badge">COPY</button></p>
+</article>
+{{ end }}

@@ -359,6 +359,14 @@ main a:not(.btn):not(.card):hover { background: var(--accent); color: var(--acce
   .webring-icon { filter: invert(1); }
 }
 
+/* the ring */
+.ring-tagline { font-family: var(--mono); font-size: 0.9rem; color: var(--muted); margin-top: -0.4rem; }
+.ring-count { font-family: var(--mono); font-size: 0.9rem; color: var(--muted); font-weight: 400; }
+.ring-members .update-text { color: var(--muted); }
+.ring-rules { padding-left: 1.2rem; }
+.ring-rules li { margin: 0.4rem 0; }
+.own-button-img { image-rendering: pixelated; vertical-align: middle; margin-right: 8px; }
+
 /* home chat teaser */
 .chat-teaser { margin: 1.2rem 0; }
 .chat-teaser p { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

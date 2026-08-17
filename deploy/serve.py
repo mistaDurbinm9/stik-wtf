@@ -44,6 +44,7 @@ GB_FILE = os.environ.get("GB_FILE", "/var/lib/stik/guestbook.jsonl")
 CHAT_FILE = os.environ.get("CHAT_FILE", "/var/lib/stik/chat.jsonl")
 APPS_FILE = os.environ.get("APPS_FILE", "/var/lib/stik/applications.jsonl")
 POWER_FILE = os.environ.get("POWER_FILE", "/var/lib/stik/power.json")
+RING_FILE = os.environ.get("RING_FILE", os.path.join(SITE_DIR, "data", "ring.json"))
 SITE_URL = os.environ.get("SITE_URL", "https://stik.wtf")
 LOCK = threading.Lock()
 GB_LAST_POST = {}   # ponytail: in-memory per-IP rate limits, reset on restart — fine here
@@ -224,6 +225,39 @@ def apply_email_body(rec):
     return "\n".join(lines)
 
 
+# ---- the "own metal" webring ----
+# Members live in the site repo (data/ring.json), so adding one is a git push like any
+# other content change; only the hop itself is dynamic.
+def ring_members(path=None):
+    try:
+        with open(path or RING_FILE, encoding="utf-8") as f:
+            return json.load(f).get("members", [])
+    except (FileNotFoundError, ValueError, AttributeError):
+        return []
+
+
+def ring_hop(slug, direction, members=None):
+    """Where does <slug> go when it hops <direction>? None if we don't know them."""
+    members = ring_members() if members is None else members
+    urls = [m.get("url") for m in members if m.get("url")]
+    slugs = [m.get("slug") for m in members if m.get("url")]
+    if not urls or slug not in slugs:
+        return None
+    i = slugs.index(slug)
+    if direction == "next":
+        return urls[(i + 1) % len(urls)]
+    if direction in ("prev", "previous"):
+        return urls[(i - 1) % len(urls)]
+    if direction == "random":
+        if len(urls) == 1:
+            return urls[0]
+        pick = i
+        while pick == i:                      # never bounce someone back to themselves
+            pick = secrets.randbelow(len(urls))
+        return urls[pick]
+    return None
+
+
 # ---- power metering ----
 # Sources push watts here; we integrate them into kWh. A sample only counts toward
 # energy if the previous one is recent (<5 min), so downtime never invents usage.
@@ -292,12 +326,27 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def _redirect(self, url):
+        self.send_response(302)
+        self.send_header("Location", url)
+        self.send_header("Cache-Control", "no-store")   # the ring must never go stale
+        self.send_header("Content-Length", "0")
+        self.end_headers()
+
     def _client_ip(self):
         return (self.headers.get("CF-Connecting-IP")
                 or (self.headers.get("X-Forwarded-For") or "").split(",")[0].strip()
                 or self.client_address[0])
 
     def do_GET(self):
+        if self.path.startswith("/ring/"):
+            parts = [p for p in self.path.split("?")[0].strip("/").split("/") if p]
+            # /ring/<slug>/<next|prev|previous|random>
+            if len(parts) == 3:
+                dest = ring_hop(parts[1], parts[2])
+                if dest:
+                    return self._redirect(dest)
+            return self._redirect(SITE_URL + "/ring/")     # lost hops land on the index
         if self.path.startswith("/api/count"):
             self._json(200, {"n": bump_counter(peek="peek=1" in self.path)})
         elif self.path == "/api/uptime":
@@ -500,6 +549,21 @@ def selftest():
         stale = power_report(path=p, now=gap + 600)                  # 10 min of silence
         assert stale["sources"] == {} and stale["watts"] == 0        # powered off, honestly
         assert abs(stale["kwh"] - 0.1) < 1e-6                        # energy total survives
+    ring = [{"slug": "a", "url": "https://a.example"},
+            {"slug": "b", "url": "https://b.example"},
+            {"slug": "c", "url": "https://c.example"}]
+    assert ring_hop("a", "next", ring) == "https://b.example"
+    assert ring_hop("c", "next", ring) == "https://a.example"        # wraps forward
+    assert ring_hop("a", "prev", ring) == "https://c.example"        # wraps backward
+    assert ring_hop("a", "previous", ring) == "https://c.example"    # both spellings
+    assert ring_hop("a", "random", ring) != "https://a.example"      # never yourself
+    assert ring_hop("nobody", "next", ring) is None                  # strangers get the index
+    assert ring_hop("a", "sideways", ring) is None
+    assert ring_hop("a", "next", []) is None                         # empty ring
+    solo = [{"slug": "a", "url": "https://a.example"}]
+    assert ring_hop("a", "next", solo) == "https://a.example"        # a ring of one
+    assert ring_hop("a", "random", solo) == "https://a.example"      # ...doesn't hang
+    assert isinstance(ring_members(path="/nonexistent/ring.json"), list)
     print("selftest ok")
 
 
