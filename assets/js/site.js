@@ -338,7 +338,7 @@ document.addEventListener('click', function (e) {
   function walkCycle(ms) {                       // alternate legs while moving
     var flip = setInterval(function () {
       bot.dataset.legs = bot.dataset.legs === 'a' ? 'b' : 'a';
-    }, 160);
+    }, 260);
     timers.push(setTimeout(function () { clearInterval(flip); bot.dataset.legs = 'a'; }, ms));
   }
 
@@ -354,42 +354,42 @@ document.addEventListener('click', function (e) {
     bot.dataset.eyes = 'c'; bot.dataset.arm = 'down'; bot.dataset.legs = 'a';
 
     at(30, function () {                        // head pokes up
-      bot.style.transition = 'bottom .3s steps(3)';
+      bot.style.transition = 'bottom .5s steps(4)';
       bot.style.bottom = '-17px';
     });
-    at(500, function () { bot.dataset.eyes = 'l'; });     // looks left
-    at(1100, function () { bot.dataset.eyes = 'r'; });    // ...and right
-    at(1700, function () {                      // all clear: climbs out
+    at(900, function () { bot.dataset.eyes = 'l'; });     // looks left
+    at(1900, function () { bot.dataset.eyes = 'r'; });    // ...and right
+    at(2900, function () {                      // all clear: climbs out
       bot.dataset.eyes = 'c';
-      bot.style.transition = 'bottom .3s steps(3)';
+      bot.style.transition = 'bottom .5s steps(4)';
       bot.style.bottom = '0px';
     });
-    at(2100, function () {                      // walks to the middle
-      bot.style.transition = 'left 1.4s steps(14)';
+    at(3700, function () {                      // walks to the middle
+      bot.style.transition = 'left 2.6s steps(20)';
       bot.style.left = mid + 'px';
-      walkCycle(1400);
+      walkCycle(2600);
     });
-    at(3600, function () {                      // pauses, turns out, waves
+    at(6500, function () {                      // pauses, turns out, waves
       bot.dataset.arm = 'up';
     });
-    at(3850, function () { bot.dataset.arm = 'wave'; });
-    at(4100, function () { bot.dataset.arm = 'up'; });
-    at(4350, function () { bot.dataset.arm = 'wave'; });
-    at(4600, function () { bot.dataset.arm = 'down'; });
-    at(4900, function () {                      // on to the far end
-      bot.style.transition = 'left 1.3s steps(13)';
+    at(6950, function () { bot.dataset.arm = 'wave'; });
+    at(7400, function () { bot.dataset.arm = 'up'; });
+    at(7850, function () { bot.dataset.arm = 'wave'; });
+    at(8300, function () { bot.dataset.arm = 'down'; });
+    at(8800, function () {                      // on to the far end
+      bot.style.transition = 'left 2.4s steps(18)';
       bot.style.left = span + 'px';
-      walkCycle(1300);
+      walkCycle(2400);
     });
-    at(6400, function () {                      // and back down behind the bar
-      bot.style.transition = 'bottom .35s steps(4)';
+    at(11400, function () {                     // and back down behind the bar
+      bot.style.transition = 'bottom .5s steps(4)';
       bot.style.bottom = '-30px';
     });
-    at(7000, function () { showing = false; });
+    at(12200, function () { showing = false; });
   }
 
-  at(12000, runShow);                           // first appearance
-  setInterval(runShow, 150000);                 // then now and then, until opened
+  at(14000, runShow);                           // first appearance
+  setInterval(runShow, 210000);                 // then now and then, until opened
 
   // --- open / close ------------------------------------------------------
   function setOpen(open) {

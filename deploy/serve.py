@@ -232,6 +232,8 @@ def apply_email_body(rec):
 # and it is told to answer from that or say it doesn't know.
 BOT_URL = os.environ.get("BOT_URL", "http://192.168.1.134:8080/v1/chat/completions")
 ASK_LAST = {}                      # ip -> ts, one question per 30s
+ASK_SLOTS = threading.BoundedSemaphore(2)   # never more than two answers in flight: the
+                                            # node has other jobs than talking to strangers
 ASK_COOLDOWN = 30
 CHUNKS_CACHE = {"t": 0.0, "data": []}
 
@@ -316,6 +318,11 @@ GREETINGS = {"hi", "hey", "hello", "yo", "sup", "howdy", "hiya", "oi", "hallo",
              "good morning", "good evening", "gm", "wsg", "whats up", "what's up"}
 
 
+def is_greeting(question):
+    plain = question.strip().strip("!?.").lower()
+    return plain in GREETINGS or len(plain) < 3
+
+
 def demarkdown(text):
     """The model copies markdown out of the pages; the answer is prose, so flatten it."""
     text = re.sub(r"\[([^\]]+)\]\([^)]*\)", r"\1", text)   # [label](url) -> label
@@ -327,38 +334,49 @@ def demarkdown(text):
 def ask_bot(question, timeout=60):
     """Returns (answer, sources). Never raises — the box degrades to an apology."""
     import urllib.request
-    plain = question.strip().strip("!?.").lower()
-    if plain in GREETINGS or len(plain) < 3:
+    if is_greeting(question):
         return ("hey. I'm stik's little robot — I've read this site and nothing else. "
                 "Ask me about the homelab, the minecraft server, the projects, or how to "
                 "join anything.", [])
     found = retrieve(question)
-    if not found:
-        return ("I couldn't find a page about that — I only know what's written on this "
-                "site. Try the homelab, the minecraft server, the forge, or the shop.", [])
-    context = "\n\n".join("## %s (%s)\n%s" % (c["title"], c["url"], c["text"]) for c in found)
+    VOICE = ("You are stik's little robot, a small friendly bot living on stik.wtf, the "
+             "personal site of Tyler ('stik'), who self-hosts everything on a server at "
+             "home. Be warm, brief and casual. One to three sentences of plain prose. "
+             "Never markdown, never bullet points, never links.")
+    if found:
+        context = "\n\n".join("## %s (%s)\n%s" % (c["title"], c["url"], c["text"]) for c in found)
+        system = (VOICE + " Answer using ONLY the page text below. If the answer is not in "
+                  "it, say you could not find it on the site. Do not repeat the text "
+                  "verbatim; the reader sees the source pages separately.")
+        user = "Pages:\n%s\n\nQuestion: %s" % (context, question)
+    else:
+        # No page matched. Chat rather than brush the visitor off, but never invent facts
+        # about stik or his machines: those are exactly what it cannot check.
+        system = (VOICE + " You have no page about this, so answer from general knowledge "
+                  "if it is a simple everyday question. If it asks something specific about "
+                  "stik, this site, or his hardware and you have no page for it, say you "
+                  "could not find that page rather than guessing. If you are unsure of a "
+                  "fact, say so: you are a very small model and you know it.")
+        user = question
     payload = {
-        "messages": [
-            {"role": "system", "content":
-             "You are stik's little robot: a small friendly bot on stik.wtf, a personal "
-             "website. Answer the question using ONLY the page text given to you. If it "
-             "isn't there, say so plainly. Be warm and casual, like a person who knows the "
-             "site well. One to three sentences of plain prose — never markdown, never "
-             "links, never bullet points, never repeat the page text verbatim. The reader "
-             "is shown the source pages separately, so just answer in your own words."},
-            {"role": "user", "content": "Pages:\n%s\n\nQuestion: %s" % (context, question)},
-        ],
-        "max_tokens": 120, "temperature": 0.3,
+        "messages": [{"role": "system", "content": system},
+                     {"role": "user", "content": user}],
+        "max_tokens": 120, "temperature": 0.4,
     }
     req = urllib.request.Request(BOT_URL, data=json.dumps(payload).encode(), method="POST",
                                  headers={"Content-Type": "application/json"})
+    if not ASK_SLOTS.acquire(blocking=False):
+        return ("Two people are already asking me things and I only have so many cores. "
+                "Give me a few seconds.", found)
     try:
         with urllib.request.urlopen(req, timeout=timeout) as r:
             data = json.load(r)
         answer = demarkdown(data["choices"][0]["message"]["content"])
     except Exception as e:
         print("ask failed:", e, flush=True)
-        return ("The little robot is asleep or overloaded — try again in a minute.", found)
+        return ("The little robot is asleep or overloaded, try again in a minute.", found)
+    finally:
+        ASK_SLOTS.release()
     return (answer[:600], found)
 
 
@@ -696,7 +714,7 @@ class Handler(BaseHTTPRequestHandler):
             if wait > 0:
                 return self._json(429, {"err": "one question per %ds — it thinks slowly" % ASK_COOLDOWN})
             answer, sources = ask_bot(q)
-            if sources:                      # only real model calls cost a cooldown
+            if not is_greeting(q):           # greetings are free; waking the model is not
                 ASK_LAST[ip] = now
             return self._json(200, {"answer": answer,
                                     "sources": [{"title": s["title"], "url": s["url"]} for s in sources]})
