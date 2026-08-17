@@ -314,6 +314,49 @@ document.addEventListener('click', function (e) {
   });
 })();
 
+// ---- ask the little robot ----
+(function () {
+  var form = document.getElementById('ask-form');
+  if (!form) return;
+  var out = document.getElementById('ask-answer');
+  var status = document.getElementById('ask-status');
+  form.addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var q = document.getElementById('ask-q').value.trim();
+    if (q.length < 3) return;
+    status.textContent = 'thinking… (a few seconds, it is an old CPU)';
+    out.hidden = true;
+    fetch('/api/ask', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ q: q })
+    })
+      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+      .then(function (res) {
+        if (!res.ok) { status.textContent = res.j.err || 'it could not answer.'; return; }
+        status.textContent = '';
+        out.textContent = '';
+        var p = document.createElement('p');
+        p.textContent = res.j.answer;            // model output: text only, never HTML
+        out.appendChild(p);
+        if ((res.j.sources || []).length) {
+          var s = document.createElement('p');
+          s.className = 'ask-sources';
+          s.appendChild(document.createTextNode('read: '));
+          res.j.sources.forEach(function (src, i) {
+            if (i) s.appendChild(document.createTextNode(', '));
+            var a = document.createElement('a');
+            a.href = src.url;
+            a.textContent = src.title;
+            s.appendChild(a);
+          });
+          out.appendChild(s);
+        }
+        out.hidden = false;
+      })
+      .catch(function () { status.textContent = 'it could not answer.'; });
+  });
+})();
+
 // ---- status page: services, visits sparkline, git log ----
 (function () {
   var wrap = document.getElementById('svc-cards');

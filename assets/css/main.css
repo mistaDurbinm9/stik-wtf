@@ -480,3 +480,24 @@ main a:not(.btn):not(.card):hover { background: var(--accent); color: var(--acce
 .gb-form .btn { align-self: flex-start; margin-top: 4px; }
 .gb-website { position: absolute; left: -9999px; }  /* honeypot: humans never see it */
 #gb-status { font-family: var(--mono); font-size: 0.8rem; color: var(--muted); }
+
+/* the ask box */
+.ask-box:hover { transform: none; box-shadow: var(--shadow-offset) var(--shadow-offset) 0 var(--shadow); }
+.ask-blurb { font-size: 0.85rem; color: var(--muted); }
+#ask-form { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 0.6rem; }
+#ask-q {
+  flex: 1 1 220px;
+  font-family: var(--font);
+  font-size: 0.95rem;
+  color: var(--ink);
+  background: var(--surface);
+  border: var(--border-w) solid var(--ink);
+  padding: 6px 10px;
+}
+.ask-answer {
+  margin-top: 0.9rem;
+  border-left: var(--border-w) solid var(--accent);
+  padding-left: 12px;
+}
+.ask-answer p { margin: 0 0 0.4rem; }
+.ask-sources { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); }

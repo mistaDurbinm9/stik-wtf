@@ -32,6 +32,7 @@ import hashlib
 import hmac
 import json
 import os
+import re
 import secrets
 import subprocess
 import threading
@@ -223,6 +224,98 @@ def apply_email_body(rec):
     lines += ["Review, approve or deny:", link, "",
               "(That link is the only key to this application — anyone with it can decide.)"]
     return "\n".join(lines)
+
+
+# ---- the ask box: a small model, answering only from this site's own pages ----
+# A 1.5B model on a 2013 Xeon invents things when left to its own memory, so it is never
+# asked to know anything: the matching page text is retrieved and pasted in front of it,
+# and it is told to answer from that or say it doesn't know.
+BOT_URL = os.environ.get("BOT_URL", "http://192.168.1.134:8080/v1/chat/completions")
+ASK_LAST = {}                      # ip -> ts, one question per 30s
+ASK_COOLDOWN = 30
+CHUNKS_CACHE = {"t": 0.0, "data": []}
+
+
+def site_chunks(now=None):
+    """Every content page as (title, url, text), refreshed every 10 minutes."""
+    now = now if now is not None else time.time()
+    if now - CHUNKS_CACHE["t"] < 600 and CHUNKS_CACHE["data"]:
+        return CHUNKS_CACHE["data"]
+    chunks = []
+    root = os.path.join(SITE_DIR, "content")
+    for dirpath, _dirs, files in os.walk(root):
+        for fn in files:
+            if not fn.endswith(".md"):
+                continue
+            full = os.path.join(dirpath, fn)
+            try:
+                raw = open(full, encoding="utf-8").read()
+            except OSError:
+                continue
+            title, body = fn[:-3], raw
+            if raw.startswith("---"):
+                end = raw.find("---", 3)
+                if end > 0:
+                    front, body = raw[3:end], raw[end + 3:]
+                    for line in front.splitlines():
+                        if line.lower().startswith("title:"):
+                            title = line.split(":", 1)[1].strip().strip('"')
+            rel = os.path.relpath(full, root).replace(os.sep, "/")
+            url = "/" + rel[:-3].replace("_index", "").replace("index", "").strip("/")
+            text = " ".join(body.split())
+            if len(text) > 40:
+                chunks.append({"title": title, "url": url.rstrip("/") + "/", "text": text[:1200]})
+    CHUNKS_CACHE.update(t=now, data=chunks)
+    return chunks
+
+
+STOPWORDS = {"the", "a", "an", "is", "are", "do", "does", "what", "how", "who", "why",
+             "can", "i", "you", "your", "my", "to", "of", "on", "in", "for", "and", "it"}
+
+
+def retrieve(question, k=2, chunks=None):
+    chunks = site_chunks() if chunks is None else chunks
+    words = [w for w in re.findall(r"[a-z0-9]+", question.lower()) if w not in STOPWORDS]
+    if not words or not chunks:
+        return []
+    scored = []
+    for c in chunks:
+        hay = (c["title"] + " " + c["text"]).lower()
+        score = sum(hay.count(w) for w in words) + 3 * sum(w in c["title"].lower() for w in words)
+        if score:
+            scored.append((score, c))
+    scored.sort(key=lambda s: -s[0])
+    return [c for _s, c in scored[:k]]
+
+
+def ask_bot(question, timeout=60):
+    """Returns (answer, sources). Never raises — the box degrades to an apology."""
+    import urllib.request
+    found = retrieve(question)
+    if not found:
+        return ("I only know what's written on this site, and I couldn't find a page "
+                "about that. Try asking about the homelab, the minecraft server, or the projects.", [])
+    context = "\n\n".join("## %s (%s)\n%s" % (c["title"], c["url"], c["text"]) for c in found)
+    payload = {
+        "messages": [
+            {"role": "system", "content":
+             "You answer questions about stik.wtf, a personal website. Use ONLY the page "
+             "text provided. If the answer isn't there, say you don't know. Two sentences "
+             "maximum. Write plainly, no lists, no markdown."},
+            {"role": "user", "content": "Pages:\n%s\n\nQuestion: %s" % (context, question)},
+        ],
+        "max_tokens": 120, "temperature": 0.3,
+    }
+    req = urllib.request.Request(BOT_URL, data=json.dumps(payload).encode(), method="POST",
+                                 headers={"Content-Type": "application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            data = json.load(r)
+        answer = data["choices"][0]["message"]["content"].strip()
+    except Exception as e:
+        print("ask failed:", e, flush=True)
+        return ("The little robot is asleep or overloaded — try again in a minute.", found)
+    return (answer[:600], found)
 
 
 # ---- service status ----
@@ -545,6 +638,23 @@ class Handler(BaseHTTPRequestHandler):
             self._json(404, {"err": "not found"})
 
     def do_POST(self):
+        if self.path == "/api/ask":
+            try:
+                body = json.loads(self.rfile.read(int(self.headers.get("Content-Length", 0)) or 0) or b"{}")
+            except (ValueError, TypeError):
+                return self._json(400, {"err": "bad json"})
+            q = (body.get("q") or "").strip()[:300]
+            if len(q) < 3:
+                return self._json(400, {"err": "ask a longer question"})
+            ip = self._client_ip()
+            now = time.time()
+            wait = ASK_COOLDOWN - (now - ASK_LAST.get(ip, 0))
+            if wait > 0:
+                return self._json(429, {"err": "one question per %ds — it thinks slowly" % ASK_COOLDOWN})
+            ASK_LAST[ip] = now
+            answer, sources = ask_bot(q)
+            return self._json(200, {"answer": answer,
+                                    "sources": [{"title": s["title"], "url": s["url"]} for s in sources]})
         if self.path == "/api/canvas":
             try:
                 body = json.loads(self.rfile.read(int(self.headers.get("Content-Length", 0)) or 0) or b"{}")
