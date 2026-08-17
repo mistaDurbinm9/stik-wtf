@@ -452,22 +452,24 @@ document.addEventListener('click', function (e) {
         var pw = document.getElementById('power');
         var p = j.power;
         if (pw && p && p.watts > 0) {
-          var parts = [];
-          if (p.sources.node) parts.push('node ' + Math.round(p.sources.node.watts) + 'W');
-          if (p.sources.pc) parts.push('pc ' + Math.round(p.sources.pc.watts) + 'W');
-          Object.keys(p.sources).forEach(function (k) {
-            if (k !== 'node' && k !== 'pc') parts.push(k + ' ' + Math.round(p.sources[k].watts) + 'W');
+          var order = Object.keys(p.sources).sort(function (a, b) {
+            return (a === 'node' ? -1 : b === 'node' ? 1 : a.localeCompare(b));
           });
-          var line = 'drawing ' + parts.join(' + ');
+          var parts = order.map(function (k) { return k + ' ' + Math.round(p.sources[k].watts); });
+          // sits inline with uptime, so: headline total, breakdown only when there's more
+          // than one machine awake, and the per-chip detail stays in the tooltip.
+          var line = Math.round(p.watts) + 'W';
+          if (parts.length > 1) line += ' (' + parts.join(' + ') + ')';
+          else if (order.length === 1) line = order[0] + ' ' + line;
           // energy is one quantity, shown in whatever unit keeps it readable:
           // watt-hours until there's a kilowatt-hour, then kWh, then MWh.
           var wh = p.kwh * 1000;
           var energy = wh >= 1e6 ? (p.kwh / 1000).toFixed(2) + ' MWh'
                      : wh >= 1000 ? p.kwh.toFixed(p.kwh >= 10 ? 1 : 2) + ' kWh'
                      : Math.round(wh) + ' Wh';
-          if (wh >= 1) line += ' · ' + energy + ' burned since ' +
+          if (wh >= 1) line += ' · ' + energy + ' since ' +
             new Date(p.since * 1000).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-          pw.textContent = line;
+          pw.textContent = ' · ' + line;
           pw.hidden = false;
         }
       })
