@@ -371,7 +371,7 @@ document.addEventListener('click', function (e) {
     palette = j.palette;
     if (!palEl.children.length) buildPalette();
     draw(j.grid);
-    placedBadge.textContent = j.placed + ' PIXELS';
+    placedBadge.textContent = j.placed + (j.placed === 1 ? ' PIXEL' : ' PIXELS');
     if (typeof j.wait === 'number') wait = j.wait;
   }
 
