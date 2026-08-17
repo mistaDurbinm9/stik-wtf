@@ -1,23 +1,38 @@
+{{/* The ask dock: a wide thin bar the width of the panel, with a little robot that
+     periodically climbs out from behind it, walks the length of it, waves, and drops
+     back down. Frames are switched by data-attributes — steps, never tweens. */}}
 <div class="ask-dock" id="ask-dock">
-  <button class="ask-toggle" id="ask-toggle" aria-expanded="false" aria-controls="ask-panel" title="ask stik's little robot">
-    <svg class="ask-mascot" viewBox="0 0 12 14" width="26" height="30" aria-hidden="true" shape-rendering="crispEdges">
-      <g fill="var(--ink)">
-        <rect x="5" y="1" width="3" height="3"/><rect x="6" y="4" width="1" height="3"/>
-        <rect x="3" y="5" width="7" height="1"/>
-        <rect x="5" y="7" width="1" height="1"/><rect x="4" y="8" width="1" height="1"/><rect x="3" y="9" width="1" height="1"/>
-        <rect x="7" y="7" width="1" height="1"/><rect x="8" y="8" width="1" height="1"/><rect x="9" y="9" width="1" height="1"/>
-        <rect x="2" y="10" width="3" height="1"/><rect x="8" y="10" width="3" height="1"/>
-      </g>
-      <g fill="var(--accent)">
-        <rect x="6" y="8" width="1" height="1"/><rect x="5" y="9" width="3" height="1"/>
-        <rect x="5" y="10" width="3" height="1"/><rect x="5" y="11" width="3" height="1"/>
-        <rect x="6" y="12" width="1" height="1"/>
-      </g>
-    </svg>
-    <span class="ask-toggle-label">ask</span>
-  </button>
 
-  <div class="ask-nudge" id="ask-nudge" hidden aria-hidden="true"></div>
+  <div class="ask-stage" id="ask-stage" aria-hidden="true">
+    <div class="ask-bot" id="ask-bot" data-eyes="c" data-legs="a" data-arm="down">
+      <svg viewBox="0 0 12 14" width="24" height="28" shape-rendering="crispEdges">
+        <!-- antenna -->
+        <rect x="5" y="1" width="1" height="1" fill="var(--ink)"/>
+        <rect x="5" y="0" width="1" height="1" fill="var(--accent)" class="blip"/>
+        <!-- head -->
+        <rect x="2" y="2" width="8" height="5" fill="var(--ink)"/>
+        <g class="eyes eyes-c"><rect x="4" y="4" width="1" height="1" fill="var(--accent)"/><rect x="7" y="4" width="1" height="1" fill="var(--accent)"/></g>
+        <g class="eyes eyes-l"><rect x="3" y="4" width="1" height="1" fill="var(--accent)"/><rect x="6" y="4" width="1" height="1" fill="var(--accent)"/></g>
+        <g class="eyes eyes-r"><rect x="5" y="4" width="1" height="1" fill="var(--accent)"/><rect x="8" y="4" width="1" height="1" fill="var(--accent)"/></g>
+        <!-- body -->
+        <rect x="3" y="7" width="6" height="4" fill="var(--ink)"/>
+        <rect x="5" y="8" width="2" height="1" fill="var(--accent)"/>
+        <!-- arms -->
+        <rect x="2" y="8" width="1" height="2" fill="var(--ink)"/>
+        <g class="arm arm-down"><rect x="9" y="8" width="1" height="2" fill="var(--ink)"/></g>
+        <g class="arm arm-up"><rect x="9" y="7" width="1" height="1" fill="var(--ink)"/><rect x="10" y="5" width="1" height="2" fill="var(--ink)"/></g>
+        <g class="arm arm-wave"><rect x="9" y="7" width="1" height="1" fill="var(--ink)"/><rect x="10" y="6" width="1" height="1" fill="var(--ink)"/><rect x="11" y="5" width="1" height="1" fill="var(--ink)"/></g>
+        <!-- legs -->
+        <g class="legs legs-a"><rect x="4" y="11" width="1" height="3" fill="var(--ink)"/><rect x="7" y="11" width="1" height="3" fill="var(--ink)"/></g>
+        <g class="legs legs-b"><rect x="5" y="11" width="1" height="3" fill="var(--ink)"/><rect x="6" y="11" width="1" height="3" fill="var(--ink)"/></g>
+      </svg>
+    </div>
+  </div>
+
+  <button class="ask-toggle" id="ask-toggle" aria-expanded="false" aria-controls="ask-panel">
+    <span class="ask-toggle-label">ask stik's little robot</span>
+    <span class="ask-toggle-caret" aria-hidden="true">▲</span>
+  </button>
 
   <div class="ask-panel" id="ask-panel" hidden>
     <div class="ask-panel-head">

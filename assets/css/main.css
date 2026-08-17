@@ -502,28 +502,40 @@ main a:not(.btn):not(.card):hover { background: var(--accent); color: var(--acce
 .ask-answer p { margin: 0 0 0.4rem; }
 .ask-sources { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); }
 
-/* the ask dock: always there, bottom-right, out of the reading column */
-.ask-dock { position: fixed; right: 18px; bottom: 18px; z-index: 97; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+/* the ask dock: a bar the width of the panel, bottom-right, out of the reading column */
+.ask-dock { position: fixed; right: 18px; bottom: 18px; z-index: 97; width: min(340px, calc(100vw - 36px)); }
+
+/* the stage the robot climbs out of: clipped, so he can hide behind the bar */
+.ask-stage { position: relative; height: 30px; overflow: hidden; pointer-events: none; }
+.ask-bot { position: absolute; left: 4px; bottom: -30px; }
+.ask-bot svg { display: block; image-rendering: pixelated; }
+.ask-bot .eyes, .ask-bot .arm, .ask-bot .legs { display: none; }
+.ask-bot[data-eyes="c"] .eyes-c,
+.ask-bot[data-eyes="l"] .eyes-l,
+.ask-bot[data-eyes="r"] .eyes-r,
+.ask-bot[data-arm="down"] .arm-down,
+.ask-bot[data-arm="up"] .arm-up,
+.ask-bot[data-arm="wave"] .arm-wave,
+.ask-bot[data-legs="a"] .legs-a,
+.ask-bot[data-legs="b"] .legs-b { display: block; }
+
+/* the bar */
 .ask-toggle {
-  display: flex; align-items: center; gap: 8px; cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  width: 100%; cursor: pointer;
   background: var(--surface); color: var(--ink);
   border: var(--border-w) solid var(--ink); border-radius: var(--radius);
   box-shadow: var(--shadow-offset) var(--shadow-offset) 0 var(--shadow);
-  font-family: var(--font); font-weight: 800; font-size: 0.9rem;
-  padding: 8px 12px;
+  font-family: var(--font); font-weight: 800; font-size: 0.85rem;
+  padding: 7px 12px;
 }
 .ask-toggle:hover { transform: translate(2px, 2px); box-shadow: 4px 4px 0 var(--shadow); }
 .ask-toggle:active { transform: translate(6px, 6px); box-shadow: 0 0 0 var(--shadow); }
-.ask-mascot { image-rendering: pixelated; }
-.ask-toggle.waving .ask-mascot { animation: askwave 0.45s steps(1) infinite; }
-@keyframes askwave { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
-.ask-nudge {
-  background: var(--surface); border: 2px solid var(--ink); border-radius: var(--radius);
-  box-shadow: 4px 4px 0 var(--shadow);
-  font-family: var(--mono); font-size: 0.75rem; padding: 6px 10px; max-width: 210px;
-}
+.ask-toggle-caret { font-size: 0.7rem; color: var(--accent); }
+.ask-dock.open .ask-toggle-caret { transform: rotate(180deg); }
+
 .ask-panel {
-  width: min(340px, calc(100vw - 36px));
+  width: 100%; margin-top: 8px;
   background: var(--surface);
   border: var(--border-w) solid var(--ink); border-radius: var(--radius);
   box-shadow: var(--shadow-offset) var(--shadow-offset) 0 var(--shadow);
@@ -541,5 +553,5 @@ main a:not(.btn):not(.card):hover { background: var(--accent); color: var(--acce
 #ask-form { display: flex; gap: 6px; margin-top: 6px; }
 #ask-q { flex: 1 1 auto; min-width: 0; font-family: var(--font); font-size: 0.9rem; color: var(--ink); background: var(--surface); border: 2px solid var(--ink); padding: 6px 8px; }
 #ask-form .btn { padding: 6px 12px; }
-@media (max-width: 520px) { .ask-dock { right: 10px; bottom: 10px; } .ask-toggle-label { display: none; } }
-@media (prefers-reduced-motion: reduce) { .ask-toggle.waving .ask-mascot { animation: none; } }
+@media (max-width: 520px) { .ask-dock { right: 10px; bottom: 10px; left: 10px; width: auto; } }
+@media (prefers-reduced-motion: reduce) { .ask-stage { display: none; } }

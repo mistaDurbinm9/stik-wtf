@@ -321,40 +321,93 @@ document.addEventListener('click', function (e) {
   var toggle = document.getElementById('ask-toggle');
   var panel = document.getElementById('ask-panel');
   var log = document.getElementById('ask-log');
-  var nudge = document.getElementById('ask-nudge');
   var form = document.getElementById('ask-form');
   var input = document.getElementById('ask-q');
-  var opened = false, busy = false;
+  var stage = document.getElementById('ask-stage');
+  var bot = document.getElementById('ask-bot');
+  var opened = false, busy = false, showing = false, timers = [];
 
-  var NUDGES = ['ask me something', 'what is in the node?', 'how do I join the server?',
-                'I have read every page here', 'go on, ask'];
-  var nudgeIdx = Math.floor(Math.random() * NUDGES.length);
+  // --- the attention show ------------------------------------------------
+  // He climbs out from behind the bar on the left, checks both ways, walks its
+  // length, stops halfway for a wave, carries on, then drops back down.
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  function showNudge() {
-    if (opened || document.hidden) return;
-    nudge.textContent = NUDGES[nudgeIdx++ % NUDGES.length];
-    nudge.hidden = false;
-    toggle.classList.add('waving');
-    setTimeout(function () { nudge.hidden = true; toggle.classList.remove('waving'); }, 6000);
+  function at(ms, fn) { timers.push(setTimeout(fn, ms)); }
+  function clearShow() { timers.forEach(clearTimeout); timers = []; showing = false; }
+
+  function walkCycle(ms) {                       // alternate legs while moving
+    var flip = setInterval(function () {
+      bot.dataset.legs = bot.dataset.legs === 'a' ? 'b' : 'a';
+    }, 160);
+    timers.push(setTimeout(function () { clearInterval(flip); bot.dataset.legs = 'a'; }, ms));
   }
-  setTimeout(showNudge, 20000);              // first tap on the shoulder
-  setInterval(showNudge, 120000);            // then every couple of minutes, until opened
 
+  function runShow() {
+    if (opened || showing || reduced || document.hidden) return;
+    showing = true;
+    var span = stage.clientWidth - 30;          // how far he can travel
+    var mid = Math.round(span / 2);
+
+    bot.style.transition = 'none';
+    bot.style.left = '4px';
+    bot.style.bottom = '-30px';
+    bot.dataset.eyes = 'c'; bot.dataset.arm = 'down'; bot.dataset.legs = 'a';
+
+    at(30, function () {                        // head pokes up
+      bot.style.transition = 'bottom .3s steps(3)';
+      bot.style.bottom = '-17px';
+    });
+    at(500, function () { bot.dataset.eyes = 'l'; });     // looks left
+    at(1100, function () { bot.dataset.eyes = 'r'; });    // ...and right
+    at(1700, function () {                      // all clear: climbs out
+      bot.dataset.eyes = 'c';
+      bot.style.transition = 'bottom .3s steps(3)';
+      bot.style.bottom = '0px';
+    });
+    at(2100, function () {                      // walks to the middle
+      bot.style.transition = 'left 1.4s steps(14)';
+      bot.style.left = mid + 'px';
+      walkCycle(1400);
+    });
+    at(3600, function () {                      // pauses, turns out, waves
+      bot.dataset.arm = 'up';
+    });
+    at(3850, function () { bot.dataset.arm = 'wave'; });
+    at(4100, function () { bot.dataset.arm = 'up'; });
+    at(4350, function () { bot.dataset.arm = 'wave'; });
+    at(4600, function () { bot.dataset.arm = 'down'; });
+    at(4900, function () {                      // on to the far end
+      bot.style.transition = 'left 1.3s steps(13)';
+      bot.style.left = span + 'px';
+      walkCycle(1300);
+    });
+    at(6400, function () {                      // and back down behind the bar
+      bot.style.transition = 'bottom .35s steps(4)';
+      bot.style.bottom = '-30px';
+    });
+    at(7000, function () { showing = false; });
+  }
+
+  at(12000, runShow);                           // first appearance
+  setInterval(runShow, 150000);                 // then now and then, until opened
+
+  // --- open / close ------------------------------------------------------
   function setOpen(open) {
-    opened = opened || open;
+    if (open) { opened = true; clearShow(); bot.style.bottom = '-30px'; }
     panel.hidden = !open;
     toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
     dock.classList.toggle('open', open);
-    if (open) { nudge.hidden = true; toggle.classList.remove('waving'); input.focus(); }
+    if (open) input.focus();
   }
   toggle.addEventListener('click', function () { setOpen(panel.hidden); });
   document.getElementById('ask-close').addEventListener('click', function () { setOpen(false); });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !panel.hidden) setOpen(false); });
 
+  // --- asking ------------------------------------------------------------
   function bubble(cls, text) {
     var d = document.createElement('div');
     d.className = 'ask-msg ' + cls;
-    d.textContent = text;                    // model output is text, never markup
+    d.textContent = text;                       // model output is text, never markup
     log.appendChild(d);
     log.scrollTop = log.scrollHeight;
     return d;
@@ -363,7 +416,7 @@ document.addEventListener('click', function (e) {
   form.addEventListener('submit', function (ev) {
     ev.preventDefault();
     var q = input.value.trim();
-    if (!q || busy) return;                  // any length goes: "hi" is a fair question
+    if (!q || busy) return;                     // any length goes: "hi" is a fair question
     busy = true;
     bubble('from-you', q);
     input.value = '';
