@@ -447,6 +447,23 @@ document.addEventListener('click', function (e) {
         render();
         up.hidden = false;
         setInterval(function () { s++; render(); }, 1000); // ticks locally; one fetch total
+
+        // power rides along on the same response — no extra request
+        var pw = document.getElementById('power');
+        var p = j.power;
+        if (pw && p && p.watts > 0) {
+          var parts = [];
+          if (p.sources.node) parts.push('node ' + Math.round(p.sources.node.watts) + 'W');
+          if (p.sources.pc) parts.push('pc ' + Math.round(p.sources.pc.watts) + 'W');
+          Object.keys(p.sources).forEach(function (k) {
+            if (k !== 'node' && k !== 'pc') parts.push(k + ' ' + Math.round(p.sources[k].watts) + 'W');
+          });
+          var line = 'drawing ' + parts.join(' + ');
+          if (p.kwh >= 0.01) line += ' · ' + p.kwh.toFixed(1) + ' kWh burned since ' +
+            new Date(p.since * 1000).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+          pw.textContent = line;
+          pw.hidden = false;
+        }
       })
       .catch(function () {});
   }

@@ -43,6 +43,7 @@ COUNT_FILE = os.path.join(SITE_DIR, ".hits")
 GB_FILE = os.environ.get("GB_FILE", "/var/lib/stik/guestbook.jsonl")
 CHAT_FILE = os.environ.get("CHAT_FILE", "/var/lib/stik/chat.jsonl")
 APPS_FILE = os.environ.get("APPS_FILE", "/var/lib/stik/applications.jsonl")
+POWER_FILE = os.environ.get("POWER_FILE", "/var/lib/stik/power.json")
 SITE_URL = os.environ.get("SITE_URL", "https://stik.wtf")
 LOCK = threading.Lock()
 GB_LAST_POST = {}   # ponytail: in-memory per-IP rate limits, reset on restart — fine here
@@ -223,6 +224,55 @@ def apply_email_body(rec):
     return "\n".join(lines)
 
 
+# ---- power metering ----
+# Sources push watts here; we integrate them into kWh. A sample only counts toward
+# energy if the previous one is recent (<5 min), so downtime never invents usage.
+def power_state(path=None):
+    try:
+        with open(path or POWER_FILE, encoding="utf-8") as f:
+            return json.load(f)
+    except (FileNotFoundError, ValueError):
+        return {"sources": {}, "kwh": 0.0, "since": int(time.time())}
+
+
+def power_push(source, watts, detail=None, path=None, now=None):
+    path = path or POWER_FILE
+    now = now if now is not None else time.time()
+    try:
+        watts = float(watts)
+    except (TypeError, ValueError):
+        return None
+    if not (0 <= watts < 5000):          # a home rig is not a data centre
+        return None
+    with LOCK:
+        st = power_state(path)
+        prev = st["sources"].get(source)
+        if prev and 0 < now - prev["t"] < 300:
+            dt_h = (now - prev["t"]) / 3600.0
+            avg = (prev["watts"] + watts) / 2.0        # trapezoid: kinder to spikes
+            st["kwh"] = round(st["kwh"] + avg * dt_h / 1000.0, 6)
+        st["sources"][source] = {"watts": round(watts, 1), "t": now,
+                                 "detail": detail or {}}
+        tmp = path + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump(st, f)
+        os.replace(tmp, path)
+    return st
+
+
+def power_report(path=None, now=None):
+    """What the footer shows: live sources (stale ones dropped) and total energy."""
+    now = now if now is not None else time.time()
+    st = power_state(path)
+    live, total = {}, 0.0
+    for name, s in st["sources"].items():
+        if now - s["t"] < 300:                          # quiet for 5 min = powered off
+            live[name] = {"watts": s["watts"], "detail": s.get("detail", {})}
+            total += s["watts"]
+    return {"sources": live, "watts": round(total, 1),
+            "kwh": round(st["kwh"], 3), "since": st["since"]}
+
+
 def uptime_seconds():
     with open("/proc/uptime") as f:
         return int(float(f.read().split()[0]))
@@ -252,7 +302,7 @@ class Handler(BaseHTTPRequestHandler):
             self._json(200, {"n": bump_counter(peek="peek=1" in self.path)})
         elif self.path == "/api/uptime":
             s = uptime_seconds()
-            self._json(200, {"seconds": s, "days": s // 86400})
+            self._json(200, {"seconds": s, "days": s // 86400, "power": power_report()})
         elif self.path == "/api/guestbook":
             self._json(200, {"entries": gb_list()})
         elif self.path.startswith("/api/apply/get"):
@@ -281,6 +331,19 @@ class Handler(BaseHTTPRequestHandler):
             self._json(404, {"err": "not found"})
 
     def do_POST(self):
+        if self.path == "/api/power":
+            secret = os.environ.get("POWER_TOKEN", "")
+            given = self.headers.get("X-Power-Token", "")
+            if not (secret and hmac.compare_digest(given, secret)):
+                return self._json(403, {"err": "bad power token"})
+            try:
+                body = json.loads(self.rfile.read(int(self.headers.get("Content-Length", 0)) or 0) or b"{}")
+            except (ValueError, TypeError):
+                return self._json(400, {"err": "bad json"})
+            src = (body.get("source") or "").strip()[:16]
+            if not src or power_push(src, body.get("watts"), body.get("detail")) is None:
+                return self._json(400, {"err": "need source and a plausible watts"})
+            return self._json(200, {"ok": True, "power": power_report()})
         if self.path == "/api/apply":
             try:
                 body = json.loads(self.rfile.read(int(self.headers.get("Content-Length", 0)) or 0) or b"{}")
@@ -416,6 +479,27 @@ def selftest():
         assert len(apply_all(path=a)) == 2                          # rewrite kept both
         assert "/apply/review/?id=" in apply_email_body(r1)
         assert send_mail("x", "y") is False                         # no SMTP env -> no crash
+    with tempfile.TemporaryDirectory() as d:
+        p = os.path.join(d, "power.json")
+        t0 = 1_000_000.0
+        assert power_push("node", "not-a-number", path=p) is None
+        assert power_push("node", 99999, path=p) is None             # implausible, rejected
+        power_push("node", 100, path=p, now=t0)
+        assert power_report(path=p, now=t0)["kwh"] == 0.0            # first sample: no span
+        for i in range(1, 61):                                       # 60 pushes, 60s apart
+            power_push("node", 100, path=p, now=t0 + 60 * i)
+        now = t0 + 3600
+        r = power_report(path=p, now=now)
+        assert abs(r["kwh"] - 0.1) < 1e-6, r                         # an hour at 100W = 0.1 kWh
+        assert r["sources"]["node"]["watts"] == 100 and r["watts"] == 100
+        gap = now + 99999                                            # node was off for a day
+        power_push("node", 100, path=p, now=gap)
+        assert abs(power_report(path=p, now=gap)["kwh"] - 0.1) < 1e-6  # gap adds nothing
+        power_push("pc", 300, path=p, now=gap)
+        assert power_report(path=p, now=gap)["watts"] == 400         # both live, summed
+        stale = power_report(path=p, now=gap + 600)                  # 10 min of silence
+        assert stale["sources"] == {} and stale["watts"] == 0        # powered off, honestly
+        assert abs(stale["kwh"] - 0.1) < 1e-6                        # energy total survives
     print("selftest ok")
 
 
