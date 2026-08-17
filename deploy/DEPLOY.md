@@ -122,6 +122,12 @@ CT 902 and `/etc/stik-power.env` on the host). State lives in `/var/lib/stik/pow
   domains: ~150W idle, of which ~68W is the 384GB of DDR3.
 - **PC** — `deploy/stik-power-pc.ps1`, registered as the "stik power" scheduled task
   (`schtasks /delete /tn "stik power" /f` to stop). Reports GPUs via `nvidia-smi`.
+  The task runs `wscript.exe run-hidden.vbs`, **not** powershell.exe directly: a task
+  that launches PowerShell in the user's session flashes a console window every single
+  run, and `-WindowStyle Hidden` does not prevent it (the window exists before PowerShell
+  can hide it). wscript has no console, so the run is silent. Running the task as SYSTEM
+  also works and is invisible, but registering that needs an elevated shell.
+  The token lives in `%USERPROFILE%\stik	oken.txt` (env var takes precedence).
   CPU package power is included only if LibreHardwareMonitor is running with its web
   server on :8085; otherwise it is left out rather than guessed.
 

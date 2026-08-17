@@ -12,7 +12,14 @@
 
 param([switch]$Print)
 
-$Token   = $env:STIK_POWER_TOKEN            # or paste the token here
+# Token: env var if present, else token.txt beside this script. The scheduled task runs
+# as SYSTEM (so no console window ever flashes), and SYSTEM does not see user env vars —
+# hence the file.
+$Token = $env:STIK_POWER_TOKEN
+if (-not $Token) {
+    $tf = Join-Path $PSScriptRoot "token.txt"
+    if (Test-Path $tf) { $Token = (Get-Content $tf -Raw).Trim() }
+}
 $PushUrl = "https://stik.wtf/api/power"
 
 $detail = @{}
