@@ -25,7 +25,8 @@ The node itself:
 - **384GB DDR3-1600 ECC** — 24 × 16GB Hynix registered DIMMs (`HMT42GR7MFR4A-PB`), every
   slot on both boards filled, still running full rated speed (~60 GB/s aggregate,
   benchmarked). Server pulls are a cheat code.
-- 1TB SSD (new — this site lives on it) + 500GB HDD + 240GB HP SSD
+- 1TB SSD (new — this site lives on it) + 2TB HDD (backup target — every container,
+  weekly, plus the workstation's off-box backups) + 240GB HP SSD
 - Dedicated **10GbE ConnectX-3 link** straight to the workstation — measured 9.1 Gb/s
   RAM-to-RAM, because a spec you haven't benchmarked is a rumor
 - Proxmox VE, one container per service, zero open inbound ports
@@ -39,5 +40,31 @@ Where everything gets built (and played):
   settings are a suggestion.
 - **32GB G.Skill Trident Z5** (SK Hynix dies) — a DDR5-6400 kit overclocked to
   **7000 MT/s** at CL34-42-42-58 2T, and yes, it's stable
+
+### The tune, in numbers
+
+Because "undervolted with unlocked limits" is a vibe until you can read the profile.
+Straight from the BIOS:
+
+**CPU**
+
+| | |
+| --- | --- |
+| P-core boost, by core usage | **6.1 GHz** (1–4 cores) · **5.9 GHz** (5–8 cores), Adaptive Boost + MCE remove-all-limits |
+| V/F curve offsets | **−45 mV** at points 7 & 8, **−25 mV** at 9, **−15 mV** at 10 & 11 — undervolt the top of the curve, keep the idle end stock |
+| Voltage mode | Adaptive SVID · LLC Level 4 · AC/DC load line 0.40 / 0.98 · CEP off |
+| Power limits | PL1 = PL2 = **4095 W**, ICCMAX **400 A** — the cooler is the power limit |
+| VRM | 600 kHz fixed switching, duty & phase control on Extreme |
+| AVX2 | −1 ratio offset, TVB set to boost-until-target |
+
+**Memory**
+
+| | |
+| --- | --- |
+| Speed | **DDR5-7000** out of a 6400 XMP kit |
+| Primaries | **34-42-42-42-58** |
+| The good secondaries | tREFI maxed at **65535** · tRFC2 400 · tWR 48 · tFAW 16 · tRRD 8/4 |
+| Tertiaries | tRDRD & tWRWR sg/dg at 16/8 |
+| Voltages | VDD/VDDQ **1.48 V** · memory controller **1.40 V** |
 - NVIDIA RTX 5080 **and** RTX 3090 — yes, both
 - Samsung 990 PRO 4TB
