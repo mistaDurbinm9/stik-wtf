@@ -40,6 +40,8 @@ Where everything gets built (and played):
   settings are a suggestion.
 - **32GB G.Skill Trident Z5** (SK Hynix dies) — a DDR5-6400 kit overclocked to
   **7000 MT/s** at CL34-42-42-58 2T, and yes, it's stable
+- NVIDIA RTX 5080 **and** RTX 3090 — yes, both
+- Samsung 990 PRO 4TB
 
 ### The tune, in numbers
 
@@ -66,5 +68,3 @@ Straight from the BIOS:
 | The good secondaries | tREFI maxed at **65535** · tRFC2 400 · tWR 48 · tFAW 16 · tRRD 8/4 |
 | Tertiaries | tRDRD & tWRWR sg/dg at 16/8 |
 | Voltages | VDD/VDDQ **1.48 V** · memory controller **1.40 V** |
-- NVIDIA RTX 5080 **and** RTX 3090 — yes, both
-- Samsung 990 PRO 4TB
