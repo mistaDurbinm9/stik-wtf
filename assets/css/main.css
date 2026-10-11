@@ -72,6 +72,10 @@ main, .site-head, .site-foot {
   color: var(--ink);
 }
 .wordmark .tld { color: var(--accent); }
+/* the wordmark and Metis's button stay together on one row; the nav wraps under them on a phone */
+.head-brand { display: flex; align-items: baseline; gap: 18px; }
+/* the one header button: accent-filled so it stands out from the plain nav (white on #B026FF clears AA) */
+.btn.btn-metis { background: var(--accent); color: var(--accent-ink); white-space: nowrap; }
 .site-head nav { display: flex; gap: 16px; flex-wrap: wrap; }
 .site-head nav a {
   color: var(--ink);
